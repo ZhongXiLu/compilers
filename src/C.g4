@@ -7,7 +7,7 @@ grammar C;
 // Main Program Rules
 // ===============================================
 
-prog: declarationList+;
+prog: includes declarationList+;
 
 declarationList
 	: declarationList declaration
@@ -22,6 +22,12 @@ declaration
 // ===============================================
 // Include Rules
 // ===============================================
+
+includes
+	: includes include
+	| include
+	| // empty
+	;
 
 include
 	: '#include' '<' library '>'
@@ -51,13 +57,25 @@ varDeclInitialize
 
 varDeclId: ID;
 
+typeSpecifier
+	: 'char'
+	| 'short'
+	| 'int'
+	| 'long'
+	| 'float'
+	| 'double'
+	| 'signed'
+	| 'unsigned'
+	| typeSpecifier pointer
+	;
+
 // ===============================================
 // Functions Rules
 // ===============================================
 
 funcDeclaration
-	: typeSpecifier ID '(' params ')' statement
-	| ID '(' params ')' statement
+	: typeSpecifier ID '(' params ')' compoundStmt
+	// | ID '(' params ')' compoundStmt 	// TODO: is this correct C ?
 	;
 
 params
@@ -133,14 +151,111 @@ breakStmt
 
 // ===============================================
 // Expression Rules
+// TODO: make rules shorter?
 // ===============================================
 
+// TODO: support '+=', '++', '&&', '%', ...
 expression
-	: // TODO
+	: mutable '=' expression
+	| simpleExpression
 	;
 
 simpleExpression
-	: // TODO
+	: simpleExpression '||' andExpression
+	| andExpression
+	;
+
+andExpression
+	: andExpression '&&' unaryRelExpression
+	| unaryRelExpression
+	;
+
+unaryRelExpression
+	: '!' unaryRelExpression
+	| relExpression
+	;
+
+relExpression
+	: sumExpression relOp sumExpression
+	| sumExpression
+	;
+
+relOp
+	: '<'
+	| '>'
+	| '<='
+	| '>='
+	| '=='
+	| '!='
+	;
+
+sumExpression
+	: sumExpression sumOp term
+	| term
+	;
+
+sumOp
+	: '+'
+	| '-'
+	;
+
+term
+	: term mulOp unaryExpression
+	| unaryExpression
+	;
+
+mulOp
+	: '*'
+	| '/'
+	| '%'
+	;
+
+unaryExpression
+	: unaryOp unaryExpression
+	| factor
+	;
+
+unaryOp
+	: '-'
+	| '*'
+	| '?'
+	;
+
+factor
+	: immutable
+	| mutable
+	;
+
+mutable
+	: ID
+	| mutable '[' expression ']'
+	;
+
+immutable
+	: '(' expression ')'
+	| call
+	| constant
+	;
+
+call
+	: ID '(' args ')'
+	;
+
+args
+	: argList
+	| // empty
+	;
+
+argList
+	: argList ',' expression
+	| expression
+	;
+
+constant
+	: NUMCONST
+	| CHARCONST
+	| 'true'
+	| 'false'
 	;
 
 // ===============================================
@@ -148,20 +263,15 @@ simpleExpression
 // TODO: replace '...' with tokens (e.g. ';' => 'SEMICOLON: ';';')
 // ===============================================
 
-typeSpecifier
-	: 'char'
-	| 'short'
-	| 'int'
-	| 'long'
-	| 'float'
-	| 'double'
-	| 'signed'
-	| 'unsigned'
-	| typeSpecifier pointer
-	;
-
 pointer: '*';
-ID: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9')*;
+
+fragment NONDIGIT: [a-zA-Z_];
+fragment DIGIT: [0-9];
+LETDIG: DIGIT | NONDIGIT;
+
+ID: NONDIGIT LETDIG*;
+NUMCONST: DIGIT+;
+CHARCONST: '"' ~('\r' | '\n' | '"')* '"';	//  '~' negates charsets
 
 // ===============================================
 // Comments & Other
