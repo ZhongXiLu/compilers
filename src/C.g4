@@ -7,7 +7,7 @@ grammar C;
 // Main Program Rules
 // ===============================================
 
-prog: includes declarationList+;
+prog: includes declarationList;
 
 declarationList
 	: declarationList declaration
@@ -30,7 +30,7 @@ includes
 	;
 
 include
-	: '#include' '<' library '>'
+	: '#' 'include' '<' library '>'
 	;
 
 library
@@ -42,7 +42,7 @@ library
 // ===============================================
 
 varDeclaration
-	: typeSpecifier varDeclList
+	: typeSpecifier varDeclList ';'
 	;
 
 varDeclList
@@ -66,7 +66,7 @@ typeSpecifier
 	| 'double'
 	| 'signed'
 	| 'unsigned'
-	| typeSpecifier pointer
+	| typeSpecifier '*'
 	;
 
 // ===============================================
@@ -84,7 +84,7 @@ params
 	;
 
 paramList
-	: paramList ';' paramTypeList
+	: paramList ',' paramTypeList
 	| paramTypeList
 	;
 
@@ -92,12 +92,7 @@ paramTypeList
 	: typeSpecifier paramIdList
 	;
 
-paramIdList
-	: paramIdList ',' paramId
-	| paramId
-	;
-
-paramId: ID;
+paramIdList: ID;
 
 // ===============================================
 // Statement Rules
@@ -114,7 +109,7 @@ statement
 
 expressionStmt
 	: expression ';'
-	| ';'
+	//| ';'
 	;
 
 compoundStmt
@@ -143,6 +138,7 @@ iterationStmt
 returnStmt
 	: 'return' ';'
 	| 'return' expression ';'
+	//| 'return' '0' ';'
 	;
 
 breakStmt
@@ -229,6 +225,7 @@ factor
 mutable
 	: ID
 	| mutable '[' expression ']'
+	| '&' mutable
 	;
 
 immutable
@@ -252,18 +249,16 @@ argList
 	;
 
 constant
-	: NUMCONST
-	| CHARCONST
-	| 'true'
+	: 'true'
 	| 'false'
+	| NUMCONST
+	| CHARCONST
 	;
 
 // ===============================================
 // Tokens
 // TODO: replace '...' with tokens (e.g. ';' => 'SEMICOLON: ';';')
 // ===============================================
-
-pointer: '*';
 
 fragment NONDIGIT: [a-zA-Z_];
 fragment DIGIT: [0-9];
