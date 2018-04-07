@@ -10,8 +10,8 @@ grammar C;
 prog: includes declarationList;
 
 declarationList
-	: declarationList declaration
-	| declaration
+	: declaration
+	| declarationList declaration
 	;
 
 declaration
@@ -113,17 +113,20 @@ expressionStmt
 	;
 
 compoundStmt
-	: '{' localDeclarations statementList '}'
+	: '{' '}'
+	| '{' statementList '}'
+	| '{' localDeclarations '}'
+	| '{' localDeclarations statementList '}'
 	;
 
 localDeclarations
-	: localDeclarations varDeclaration
-	| // empty
+	: varDeclaration
+	| localDeclarations varDeclaration
 	;
 
 statementList
-	: statementList statement
-	| // empty
+	: statement
+	| statementList statement
 	;
 
 selectionStmt
