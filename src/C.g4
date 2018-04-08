@@ -11,7 +11,7 @@ prog: includes declarationList;
 
 declarationList
 	: declaration
-	| declarationList declaration
+	| declaration declarationList
 	;
 
 declaration
@@ -52,7 +52,7 @@ varDeclList
 
 varDeclInitialize
 	: varDeclId
-	| varDeclId ':' simpleExpression
+	| varDeclId '=' simpleExpression
 	;
 
 varDeclId: Id;

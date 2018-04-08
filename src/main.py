@@ -14,9 +14,11 @@ def main(argv):
     parser = CParser(stream)
     tree = parser.prog()
 
-    # Build AST with the generated parse tree
+    # Visualise parse tree
     parseTreeVisitor = ParseTreeVisitor()
     parseTreeVisitor.generateDOT(parser, tree)
+
+    # TODO: Build AST with the generated parse tree
 
 
 if __name__ == '__main__':
