@@ -1,4 +1,10 @@
 
+# dot generated files
+*.dot
+*.gv
+*.dot.pdf
+*.gv.pdf
+
 # ANTLR Generated Files
 C.tokens
 CLexer.py
@@ -6,6 +12,8 @@ CLexer.tokens
 CListener.py
 CParser.py
 CVisitor.py
+C.interp
+CLexer.interp
 
 # PyCharm
 .idea/

@@ -55,7 +55,7 @@ varDeclInitialize
 	| varDeclId ':' simpleExpression
 	;
 
-varDeclId: ID;
+varDeclId: Id;
 
 typeSpecifier
 	: 'char'
@@ -74,7 +74,7 @@ typeSpecifier
 // ===============================================
 
 funcDeclaration
-	: typeSpecifier ID '(' params ')' compoundStmt
+	: typeSpecifier Id '(' params ')' compoundStmt
 	// | ID '(' params ')' compoundStmt 	// TODO: is this correct C ?
 	;
 
@@ -92,7 +92,7 @@ paramTypeList
 	: typeSpecifier paramIdList
 	;
 
-paramIdList: ID;
+paramIdList: Id;
 
 // ===============================================
 // Statement Rules
@@ -226,7 +226,7 @@ factor
 	;
 
 mutable
-	: ID
+	: Id
 	| mutable '[' expression ']'
 	| '&' mutable
 	;
@@ -238,7 +238,7 @@ immutable
 	;
 
 call
-	: ID '(' args ')'
+	: Id '(' args ')'
 	;
 
 args
@@ -254,22 +254,25 @@ argList
 constant
 	: 'true'
 	| 'false'
-	| NUMCONST
-	| CHARCONST
+	| NumConst
+	| CharConst
 	;
 
 // ===============================================
 // Tokens
-// TODO: replace '...' with tokens (e.g. ';' => 'SEMICOLON: ';';')
+// TODO: replace '...' with tokens (e.g. ';' => 'SEMICOLON: ';';') ?
 // ===============================================
 
-fragment NONDIGIT: [a-zA-Z_];
-fragment DIGIT: [0-9];
-LETDIG: DIGIT | NONDIGIT;
+// 'fragment': "You can also define rules that are not tokens but rather aid in the recognition of tokens.
+//              These fragment rules do not result in tokens visible to the parser"
 
-ID: NONDIGIT LETDIG*;
-NUMCONST: DIGIT+;
-CHARCONST: '"' ~('\r' | '\n' | '"')* '"';	//  '~' negates charsets
+fragment NonDigit: [a-zA-Z_];
+fragment Digit: [0-9];
+fragment LetDig: Digit | NonDigit;
+
+Id: NonDigit LetDig*;
+NumConst: Digit+;
+CharConst: '"' ~('\r' | '\n' | '"')* '"';	//  '~' negates charsets
 
 // ===============================================
 // Comments & Other
@@ -281,7 +284,8 @@ Whitespace
 	;
 
 Newline
-	: ('\r' '\n'? | '\n') -> skip
+	: ('\r' '\n'? | '\n')
+		-> skip
 	;
 
 BlockComment

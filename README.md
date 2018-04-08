@@ -15,6 +15,6 @@ sudo pip3 install -r requirements.txt
 
 ```bash
 cd src/
-java -jar antlr-4.7.1-complete.jar -Dlanguage=Python2 C.g4 -visitor
+java -jar antlr-4.7.1-complete.jar -Dlanguage=Python3 C.g4 -visitor
 python main.py <C_FILE>
 ```
