@@ -4,29 +4,29 @@ from graphviz import Digraph
 
 def DotGraphBuilder(root, children):
 
-    nodes = {}
-    idCounter = 0
-
-    graph = Digraph(root)
+    # Note: graph name is equal to root id
+    rootId = DotGraphBuilder.idCounter
+    DotGraphBuilder.idCounter += 1
+    graph = Digraph(str(rootId))
 
     # Create root node
-    rootId = idCounter
-    nodes[rootId] = root
-    idCounter += 1
-    graph.node(str(rootId), nodes[rootId])
+    graph.node(str(rootId), root)
 
     # Create children
     for child in children:
 
         if type(child) is str:
-            childId = idCounter
-            nodes[childId] = child
-            idCounter += 1
+            childId = DotGraphBuilder.idCounter
+            DotGraphBuilder.idCounter += 1
 
-            graph.node(str(childId), nodes[childId])
+            graph.node(str(childId), child)
             graph.edge(str(rootId), str(childId))
 
         else:
             graph.subgraph(child)
+            graph.edge(str(rootId), str(child.name))
 
     return graph
+
+
+DotGraphBuilder.idCounter = 0
