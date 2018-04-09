@@ -51,11 +51,9 @@ varDeclList
 	;
 
 varDeclInitialize
-	: varDeclId
-	| varDeclId '=' simpleExpression
+	: Id
+	| Id '=' simpleExpression
 	;
-
-varDeclId: Id;
 
 typeSpecifier
 	: 'char'
@@ -89,10 +87,8 @@ paramList
 	;
 
 paramTypeList
-	: typeSpecifier paramIdList
+	: typeSpecifier Id
 	;
-
-paramIdList: Id;
 
 // ===============================================
 // Statement Rules
@@ -242,12 +238,7 @@ call
 	;
 
 args
-	: argList
-	| // empty
-	;
-
-argList
-	: argList ',' expression
+	: args ',' expression
 	| expression
 	;
 

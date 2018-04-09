@@ -2,13 +2,13 @@
 from graphviz import Digraph
 
 
-class ParseTreeVisitor:
+class ParseTreeDotGenerator:
 
     def __init__(self):
         self.nodes = {}
         self.idCounter = 0
 
-    def generateDOT(self, parser, tree):
+    def generateDOT(self, parser, tree, render=False):
         dot = Digraph("Parse Tree")
 
         # Create root
@@ -17,7 +17,7 @@ class ParseTreeVisitor:
 
         self.visit(dot, parser, tree, id)
 
-        dot.render("parse_tree.gv", view=True)
+        dot.render("parse_tree.gv", view=render)
 
     def createIDEntry(self, value):
         id = self.idCounter
