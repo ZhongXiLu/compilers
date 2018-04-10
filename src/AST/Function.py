@@ -11,7 +11,7 @@ class Function:
     def visit(self, visitorObject):
         items = []
         # [items.append(node.visit(visitorObject)) for node in self.body]
-        return visitorObject("Function", [self.returns, self.name, self.args.visit(visitorObject)] + items)
+        return visitorObject("FunctionDecl", [self.returns, self.name, self.args.visit(visitorObject)] + items)
 
 
 class Arguments:
@@ -20,9 +20,7 @@ class Arguments:
         self.args = args        # list of Argument nodes
 
     def visit(self, visitorObject):
-        items = []
-        [items.append(arg.visit(visitorObject)) for arg in self.args]
-        return visitorObject("Arguments", items)
+        return visitorObject("Arguments", [arg.visit(visitorObject) for arg in self.args])
 
 
 class Argument:

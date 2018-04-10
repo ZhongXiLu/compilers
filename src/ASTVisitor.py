@@ -6,11 +6,44 @@ else:
     from CParser import CParser
 
 from CVisitor import CVisitor
-from AST import Function
+from AST import Function, Program
 
 
 class ASTVisitor(CVisitor):
 
+    # Visit a parse tree produced by CParser#prog.
+    def visitProg(self, ctx: CParser.ProgContext):
+        includes = Program.Includes(self.visitIncludes(ctx.includes()))
+        declarationList = Program.DeclarationList(self.visitDeclarationList(ctx.declarationList()))
+        return Program.Program(includes, declarationList)
+
+    # Visit a parse tree produced by CParser#declarationList.
+    def visitDeclarationList(self, ctx:CParser.DeclarationListContext):
+        declarations = []
+        try:
+            declarations += self.visitDeclarationList(ctx.declarationList())
+            declarations.append(self.visit(ctx.declaration()))
+        except:
+            pass
+        return declarations
+
+    # Visit a parse tree produced by CParser#declaration.
+    def visitDeclaration(self, ctx:CParser.DeclarationContext):
+        return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by CParser#includes.
+    def visitIncludes(self, ctx: CParser.IncludesContext):
+        includes = []
+        try:
+            includes += self.visitIncludes(ctx.includes())
+            includes.append(self.visitInclude(ctx.include()))
+        except:
+            pass
+        return includes
+
+    # Visit a parse tree produced by CParser#include.
+    def visitInclude(self, ctx: CParser.IncludeContext):
+        return Program.Include(ctx.Library().getText())
 
     # Visit a parse tree produced by CParser#typeSpecifier.
     def visitTypeSpecifier(self, ctx:CParser.TypeSpecifierContext):

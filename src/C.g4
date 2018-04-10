@@ -30,11 +30,7 @@ includes
 	;
 
 include
-	: '#' 'include' '<' library '>'
-	;
-
-library
-	: 'stdio.h'
+	: '#' 'include' '<' Library '>'
 	;
 
 // ===============================================
@@ -264,6 +260,7 @@ fragment LetDig: Digit | NonDigit;
 Id: NonDigit LetDig*;
 NumConst: Digit+;
 CharConst: '"' ~('\r' | '\n' | '"')* '"';	//  '~' negates charsets
+Library: (Id | Id '.' Id);
 
 // ===============================================
 // Comments & Other
