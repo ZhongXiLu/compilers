@@ -6,7 +6,7 @@ else:
     from CParser import CParser
 
 from CVisitor import CVisitor
-from AST import Function, Program
+from AST import Function, Program, Statement
 
 
 class ASTVisitor(CVisitor):
@@ -55,7 +55,7 @@ class ASTVisitor(CVisitor):
         typeSpecifier =  self.visitTypeSpecifier(ctx.typeSpecifier())
         args = self.visitParams(ctx.params())
         body = self.visitCompoundStmt(ctx.compoundStmt())
-        return Function.Function(name, args, body, typeSpecifier)
+        return Function.FunctionDecl(name, args, body, typeSpecifier)
 
     # Visit a parse tree produced by CParser#params.
     def visitParams(self, ctx:CParser.ParamsContext):
@@ -76,3 +76,37 @@ class ASTVisitor(CVisitor):
         typeSpecifier = self.visitTypeSpecifier(ctx.getChild(0))
         name = ctx.Id().getText()
         return Function.Argument(typeSpecifier, name)
+
+    # Visit a parse tree produced by CParser#compoundStmt.
+    def visitCompoundStmt(self, ctx:CParser.CompoundStmtContext):
+        # TODO: add localDeclarations
+        statements = []
+        try:
+            statements += self.visitStatementList(ctx.statementList())
+        except:
+            pass
+        return Statement.Compound(statements)
+
+    # Visit a parse tree produced by CParser#localDeclarations.
+    def visitLocalDeclarations(self, ctx:CParser.LocalDeclarationsContext):
+        return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by CParser#statementList.
+    def visitStatementList(self, ctx:CParser.StatementListContext):
+        statements = []
+        try:
+            statements += self.visitStatementList(ctx.statementList())
+            if self.visitStatement(ctx.statement()) is not None:     # TODO: remove this
+                statements.append(self.visitStatement(ctx.statement()))
+        except:
+            pass
+        return statements
+
+    # Visit a parse tree produced by CParser#returnStmt.
+    def visitReturnStmt(self, ctx:CParser.ReturnStmtContext):
+        expression = None
+        try:
+            expression = self.visitExpression(ctx.expression())
+        except:
+            pass
+        return Statement.Return(expression)

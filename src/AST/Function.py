@@ -1,17 +1,15 @@
 
 
-class Function:
+class FunctionDecl:
 
     def __init__(self, name, args, body, returns):
         self.name = name        # string
-        self.args = args        # list of Argument nodes
-        self.body = body        # list of nodes
+        self.args = args        # Arguments node
+        self.body = body        # Compound node
         self.returns = returns  # type
 
     def visit(self, visitorObject):
-        items = []
-        # [items.append(node.visit(visitorObject)) for node in self.body]
-        return visitorObject("FunctionDecl", [self.returns, self.name, self.args.visit(visitorObject)] + items)
+        return visitorObject("FunctionDecl", [self.returns, self.name, self.args.visit(visitorObject), self.body.visit(visitorObject)])
 
 
 class Arguments:
