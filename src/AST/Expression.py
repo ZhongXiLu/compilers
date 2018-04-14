@@ -1,7 +1,18 @@
 
 
-class Call:
+class Expression:
 
-    def __init__(self, func, args):
-        self.function = func    # function name
-        self.args = args        # list of Argument nodes
+    def __init__(self):
+        pass
+
+    def visit(self, visitorObject):
+        return visitorObject("TODO: Expression", [])
+
+
+class SimpleExpression:
+
+    def __init__(self):
+        pass
+
+    def visit(self, visitorObject):
+        return visitorObject("TODO: SimpleExpression", [])

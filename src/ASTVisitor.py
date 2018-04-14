@@ -6,7 +6,7 @@ else:
     from CParser import CParser
 
 from CVisitor import CVisitor
-from AST import Function, Program, Statement
+from AST import Expression, Function, Program, Statement
 
 
 class ASTVisitor(CVisitor):
@@ -21,8 +21,8 @@ class ASTVisitor(CVisitor):
     def visitDeclarationList(self, ctx:CParser.DeclarationListContext):
         declarations = []
         try:
+            declarations.append(self.visitDeclaration(ctx.declaration()))
             declarations += self.visitDeclarationList(ctx.declarationList())
-            declarations.append(self.visit(ctx.declaration()))
         except:
             pass
         return declarations
@@ -77,6 +77,14 @@ class ASTVisitor(CVisitor):
         name = ctx.Id().getText()
         return Function.Argument(typeSpecifier, name)
 
+    # Visit a parse tree produced by CParser#expression.
+    def visitExpression(self, ctx:CParser.ExpressionContext):
+        return Expression.Expression()  # TODO: fix this
+
+    # Visit a parse tree produced by CParser#simpleExpression.
+    def visitSimpleExpression(self, ctx:CParser.SimpleExpressionContext):
+        return Expression.SimpleExpression()    # TODO: fix this
+
     # Visit a parse tree produced by CParser#compoundStmt.
     def visitCompoundStmt(self, ctx:CParser.CompoundStmtContext):
         # TODO: add localDeclarations
@@ -96,11 +104,32 @@ class ASTVisitor(CVisitor):
         statements = []
         try:
             statements += self.visitStatementList(ctx.statementList())
-            if self.visitStatement(ctx.statement()) is not None:     # TODO: remove this
-                statements.append(self.visitStatement(ctx.statement()))
+            statements.append(self.visitStatement(ctx.statement()))
         except:
             pass
         return statements
+
+    # Visit a parse tree produced by CParser#expressionStmt.
+    def visitExpressionStmt(self, ctx:CParser.ExpressionStmtContext):
+        expression = self.visitExpression(ctx.expression())
+        return Statement.ExpressionStmt(expression)
+
+    # Visit a parse tree produced by CParser#selectionStmt.
+    def visitSelectionStmt(self, ctx:CParser.SelectionStmtContext):
+        expression = self.visitSimpleExpression(ctx.simpleExpression())
+        body = self.visitStatement(ctx.statement(0))
+        elseBody = None
+        try:
+            elseBody = self.visitStatement(ctx.statement(1))
+        except:
+            pass
+        return Statement.If(expression, body, elseBody)
+
+    # Visit a parse tree produced by CParser#iterationStmt.
+    def visitIterationStmt(self, ctx:CParser.IterationStmtContext):
+        expression = self.visitSimpleExpression(ctx.simpleExpression())
+        body = self.visitStatement(ctx.statement())
+        return Statement.While(expression, body)
 
     # Visit a parse tree produced by CParser#returnStmt.
     def visitReturnStmt(self, ctx:CParser.ReturnStmtContext):
@@ -110,3 +139,7 @@ class ASTVisitor(CVisitor):
         except:
             pass
         return Statement.Return(expression)
+
+    # Visit a parse tree produced by CParser#breakStmt.
+    def visitBreakStmt(self, ctx:CParser.BreakStmtContext):
+        return Statement.Break()
