@@ -11,7 +11,7 @@ prog: includes declarationList;
 
 declarationList
 	: declaration
-	| declaration declarationList
+	| declarationList declaration
 	;
 
 declaration
@@ -258,7 +258,7 @@ fragment Digit: [0-9];
 fragment LetDig: Digit | NonDigit;
 
 Id: NonDigit LetDig*;
-NumConst: Digit+;
+NumConst: Digit+ | (Digit* '.' Digit+) | (Digit+ '.' Digit*);   // TODO: support more (e.g. 1e10)?
 CharConst: '"' ~('\r' | '\n' | '"')* '"';	//  '~' negates charsets
 Library: (Id | Id '.' Id);
 

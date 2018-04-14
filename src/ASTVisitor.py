@@ -6,7 +6,7 @@ else:
     from CParser import CParser
 
 from CVisitor import CVisitor
-from AST import Expression, Function, Program, Statement
+from AST import Expression, Function, Program, Statement, Variable
 
 
 class ASTVisitor(CVisitor):
@@ -44,6 +44,32 @@ class ASTVisitor(CVisitor):
     # Visit a parse tree produced by CParser#include.
     def visitInclude(self, ctx: CParser.IncludeContext):
         return Program.Include(ctx.Library().getText())
+
+    # Visit a parse tree produced by CParser#varDeclaration.
+    def visitVarDeclaration(self, ctx:CParser.VarDeclarationContext):
+        type = self.visitTypeSpecifier(ctx.typeSpecifier())
+        varDeclList = Variable.VarDeclList(self.visitVarDeclList(ctx.varDeclList()))
+        return Variable.VariableDecl(type, varDeclList)
+
+    # Visit a parse tree produced by CParser#varDeclList.
+    def visitVarDeclList(self, ctx:CParser.VarDeclListContext):
+        decls = []
+        try:
+            decls += self.visitVarDeclList(ctx.varDeclList())
+            decls.append(self.visitVarDeclInitialize(ctx.varDeclInitialize()))
+        except:
+            pass
+        return decls
+
+    # Visit a parse tree produced by CParser#varDeclInitialize.
+    def visitVarDeclInitialize(self, ctx:CParser.VarDeclInitializeContext):
+        name = ctx.Id().getText()
+        expression = None
+        try:
+            expression = self.visitSimpleExpression(ctx.simpleExpression())
+        except:
+            pass
+        return Variable.VarDeclInitialize(name, expression)
 
     # Visit a parse tree produced by CParser#typeSpecifier.
     def visitTypeSpecifier(self, ctx:CParser.TypeSpecifierContext):
@@ -87,17 +113,27 @@ class ASTVisitor(CVisitor):
 
     # Visit a parse tree produced by CParser#compoundStmt.
     def visitCompoundStmt(self, ctx:CParser.CompoundStmtContext):
-        # TODO: add localDeclarations
+        localDecls = []
         statements = []
         try:
             statements += self.visitStatementList(ctx.statementList())
         except:
             pass
-        return Statement.Compound(statements)
+        try:
+            localDecls += self.visitLocalDeclarations(ctx.localDeclarations())
+        except:
+            pass
+        return Statement.Compound(localDecls, statements)
 
     # Visit a parse tree produced by CParser#localDeclarations.
     def visitLocalDeclarations(self, ctx:CParser.LocalDeclarationsContext):
-        return self.visitChildren(ctx)
+        decls = []
+        try:
+            decls += self.visitLocalDeclarations(ctx.localDeclarations())
+            decls.append(self.visitVarDeclaration(ctx.varDeclaration()))
+        except:
+            pass
+        return decls
 
     # Visit a parse tree produced by CParser#statementList.
     def visitStatementList(self, ctx:CParser.StatementListContext):

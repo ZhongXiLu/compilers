@@ -2,13 +2,13 @@
 
 class Compound:
 
-    # TODO: add localDeclarations
-
-    def __init__(self, statements):
+    def __init__(self, localDecls=[], statements=[]):
         self.statements = statements     # list of Statement nodes
+        self.localDecls = localDecls     # list of VariableDecl nodes
 
     def visit(self, visitorObject):
-        return visitorObject("CompoundStmt", [stmt.visit(visitorObject) for stmt in self.statements])
+        return visitorObject("CompoundStmt", [decl.visit(visitorObject) for decl in self.localDecls] +
+                             [stmt.visit(visitorObject) for stmt in self.statements])
 
 
 class ExpressionStmt:
