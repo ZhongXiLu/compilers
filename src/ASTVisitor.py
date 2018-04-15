@@ -133,6 +133,15 @@ class ASTVisitor(CVisitor):
         except:
             return self.visitChildren(ctx)
 
+    # Visit a parse tree produced by CParser#unaryRelExpression.
+    def visitUnaryRelExpression(self, ctx: CParser.UnaryRelExpressionContext):
+        try:
+            operator = Expression.UnaryOpTokens.NEG
+            operand = self.visitUnaryRelExpression(ctx.unaryRelExpression())
+            return Expression.UnaryOp(operator, operand)
+        except:
+            return self.visitChildren(ctx)
+
     # Visit a parse tree produced by CParser#relExpression.
     def visitRelExpression(self, ctx:CParser.RelExpressionContext):
         try:
@@ -173,6 +182,19 @@ class ASTVisitor(CVisitor):
 
     # Visit a parse tree produced by CParser#mulOp.
     def visitMulOp(self, ctx:CParser.MulOpContext):
+        return ctx.getText()
+
+    # Visit a parse tree produced by CParser#unaryExpression.
+    def visitUnaryExpression(self, ctx:CParser.UnaryExpressionContext):
+        try:
+            operator = Expression.UnaryOpTokens(self.visitUnaryOp(ctx.unaryOp()))
+            operand = self.visitUnaryExpression(ctx.unaryExpression())
+            return Expression.UnaryOp(operator, operand)
+        except:
+            return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by CParser#unaryOp.
+    def visitUnaryOp(self, ctx:CParser.UnaryOpContext):
         return ctx.getText()
 
     # Visit a parse tree produced by CParser#compoundStmt.

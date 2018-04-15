@@ -18,6 +18,11 @@ class BinOpTokens(Enum):
     DIV = "/"
 
 
+class UnaryOpTokens(Enum):
+    NEG = "!"
+    MIN = "-"
+
+
 class Expression:
 
     def __init__(self):
@@ -45,3 +50,13 @@ class BinOp:
 
     def visit(self, visitorObject):
         return visitorObject(self.operator.value, [self.left.visit(visitorObject), self.right.visit(visitorObject)])
+
+
+class UnaryOp:
+
+    def __init__(self, operator, operand):
+        self.operator = operator    # BinOpToken
+        self.operand = operand      # Expression node
+
+    def visit(self, visitorObject):
+        return visitorObject(self.operator.value, [self.operand.visit(visitorObject)])

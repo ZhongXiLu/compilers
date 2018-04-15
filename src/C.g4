@@ -218,7 +218,6 @@ factor
 mutable
 	: Id
 	| mutable '[' expression ']'
-	| mutable
 	;
 
 immutable
