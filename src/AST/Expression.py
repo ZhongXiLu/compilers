@@ -1,4 +1,22 @@
 
+from enum import Enum
+
+
+class BinOpTokens(Enum):
+    ASSIGN = "="
+    AND = "&&"
+    OR = "||"
+    LT = "<"
+    GT = ">"
+    LTE = "<="
+    GTE = ">="
+    EQ = "=="
+    NEQ = "!="
+    PLUS = "+"
+    MIN = "-"
+    MULT = "*"
+    DIV = "/"
+
 
 class Expression:
 
@@ -16,3 +34,14 @@ class SimpleExpression:
 
     def visit(self, visitorObject):
         return visitorObject("TODO: SimpleExpression", [])
+
+
+class BinOp:
+
+    def __init__(self, operator, left, right):
+        self.operator = operator    # BinOpToken
+        self.left = left            # Expression node
+        self.right = right          # Expression node
+
+    def visit(self, visitorObject):
+        return visitorObject(self.operator.value, [self.left.visit(visitorObject), self.right.visit(visitorObject)])

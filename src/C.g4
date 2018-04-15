@@ -198,7 +198,7 @@ term
 mulOp
 	: '*'
 	| '/'
-	| '%'
+//	| '%'
 	;
 
 unaryExpression
@@ -208,8 +208,6 @@ unaryExpression
 
 unaryOp
 	: '-'
-	| '*'
-	| '?'
 	;
 
 factor
@@ -220,7 +218,7 @@ factor
 mutable
 	: Id
 	| mutable '[' expression ']'
-	| '&' mutable
+	| mutable
 	;
 
 immutable
@@ -238,6 +236,7 @@ args
 	| expression
 	;
 
+// TODO: 'true'/'false' correct C ?
 constant
 	: 'true'
 	| 'false'

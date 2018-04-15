@@ -6,7 +6,7 @@ else:
     from CParser import CParser
 
 from CVisitor import CVisitor
-from AST import Expression, Function, Program, Statement, Variable
+from AST import Expression, Function, Literals, Program, Statement, Variable
 
 
 class ASTVisitor(CVisitor):
@@ -105,11 +105,75 @@ class ASTVisitor(CVisitor):
 
     # Visit a parse tree produced by CParser#expression.
     def visitExpression(self, ctx:CParser.ExpressionContext):
-        return Expression.Expression()  # TODO: fix this
+        try:
+            operator = Expression.BinOpTokens.ASSIGN
+            left = self.visitMutable(ctx.mutable())
+            right = self.visitExpression(ctx.expression())
+            return Expression.BinOp(operator, left, right)
+        except:
+            return self.visitChildren(ctx)
 
     # Visit a parse tree produced by CParser#simpleExpression.
     def visitSimpleExpression(self, ctx:CParser.SimpleExpressionContext):
-        return Expression.SimpleExpression()    # TODO: fix this
+        try:
+            operator = Expression.BinOpTokens.OR
+            left = self.visitSimpleExpression(ctx.simpleExpression())
+            right = self.visitAndExpression(ctx.andExpression())
+            return Expression.BinOp(operator, left, right)
+        except:
+            return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by CParser#andExpression.
+    def visitAndExpression(self, ctx:CParser.AndExpressionContext):
+        try:
+            operator = Expression.BinOpTokens.AND
+            left = self.visitAndExpression(ctx.andExpression())
+            right = self.visitUnaryRelExpression(ctx.unaryRelExpression())
+            return Expression.BinOp(operator, left, right)
+        except:
+            return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by CParser#relExpression.
+    def visitRelExpression(self, ctx:CParser.RelExpressionContext):
+        try:
+            operator = Expression.BinOpTokens(self.visitRelOp(ctx.relOp()))
+            left = self.visitSumExpression(ctx.sumExpression(0))
+            right = self.visitSumExpression(ctx.sumExpression(1))
+            return Expression.BinOp(operator, left, right)
+        except:
+            return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by CParser#relOp.
+    def visitRelOp(self, ctx:CParser.RelOpContext):
+        return ctx.getText()
+
+    # Visit a parse tree produced by CParser#sumExpression.
+    def visitSumExpression(self, ctx:CParser.SumExpressionContext):
+        try:
+            operator = Expression.BinOpTokens(self.visitSumOp(ctx.sumOp()))
+            left = self.visitSumExpression(ctx.sumExpression())
+            right = self.visitTerm(ctx.term())
+            return Expression.BinOp(operator, left, right)
+        except:
+            return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by CParser#sumOp.
+    def visitSumOp(self, ctx:CParser.SumOpContext):
+        return ctx.getText()
+
+    # Visit a parse tree produced by CParser#term.
+    def visitTerm(self, ctx:CParser.TermContext):
+        try:
+            operator = Expression.BinOpTokens(self.visitMulOp(ctx.mulOp()))
+            left = self.visitTerm(ctx.term())
+            right = self.visitUnaryExpression(ctx.unaryExpression())
+            return Expression.BinOp(operator, left, right)
+        except:
+            return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by CParser#mulOp.
+    def visitMulOp(self, ctx:CParser.MulOpContext):
+        return ctx.getText()
 
     # Visit a parse tree produced by CParser#compoundStmt.
     def visitCompoundStmt(self, ctx:CParser.CompoundStmtContext):
@@ -179,3 +243,8 @@ class ASTVisitor(CVisitor):
     # Visit a parse tree produced by CParser#breakStmt.
     def visitBreakStmt(self, ctx:CParser.BreakStmtContext):
         return Statement.Break()
+
+    # Visit a parse tree produced by CParser#constant.
+    def visitConstant(self, ctx:CParser.ConstantContext):
+        # TODO: fix other types such as CHARCONST
+        return Literals.Number(ctx.NumConst().getText())
