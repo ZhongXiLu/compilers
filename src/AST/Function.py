@@ -2,30 +2,31 @@
 
 class FunctionDecl:
 
-    def __init__(self, name, args, body, returns):
+    def __init__(self, name, params, body, returns):
         self.name = name        # string
-        self.args = args        # Arguments node
+        self.params = params    # Parameters node
         self.body = body        # Compound node
         self.returns = returns  # type
 
     def visit(self, visitorObject):
-        return visitorObject("FunctionDecl", [self.returns, self.name, self.args.visit(visitorObject), self.body.visit(visitorObject)])
+        return visitorObject("FunctionDecl", [self.returns, self.name, self.params.visit(visitorObject),
+                                              self.body.visit(visitorObject)])
 
 
-class Arguments:
+class Parameters:
 
-    def __init__(self, args):
-        self.args = args        # list of Argument nodes
+    def __init__(self, params):
+        self.params = params        # list of Parameter nodes
 
     def visit(self, visitorObject):
-        return visitorObject("Arguments", [arg.visit(visitorObject) for arg in self.args])
+        return visitorObject("Parameters", [param.visit(visitorObject) for param in self.params])
 
 
-class Argument:
+class Parameter:
 
     def __init__(self, type, name):
         self.type = type    # Type node
         self.name = name    # string
 
     def visit(self, visitorObject):
-        return visitorObject("Argument", [self.type, self.name])
+        return visitorObject("Parameter", [self.type, self.name])

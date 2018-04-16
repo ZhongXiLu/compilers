@@ -233,6 +233,7 @@ call
 args
 	: args ',' expression
 	| expression
+	| // empty
 	;
 
 // TODO: 'true'/'false' correct C ?

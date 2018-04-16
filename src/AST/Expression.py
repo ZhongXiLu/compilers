@@ -55,8 +55,38 @@ class BinOp:
 class UnaryOp:
 
     def __init__(self, operator, operand):
-        self.operator = operator    # BinOpToken
+        self.operator = operator    # UnaryOpToken
         self.operand = operand      # Expression node
 
     def visit(self, visitorObject):
         return visitorObject(self.operator.value, [self.operand.visit(visitorObject)])
+
+
+class Call:
+
+    def __init__(self, funcName, args):
+        self.funcName = funcName    # string
+        self.args = args            # list of expressions
+
+    def visit(self, visitorObject):
+        return visitorObject(self.funcName, [arg.visit(visitorObject) for arg in self.args])
+
+
+class Mutable:
+
+    def __init__(self, name):
+        self.name = name    # string
+
+    def visit(self, visitorObject):
+        return visitorObject(self.name, [])
+
+
+class SubScript:
+
+    def __init__(self, mutable, index):
+        self.mutable = mutable  # Mutable node
+        self.index = index      # Expression node
+
+    def visit(self, visitorObject):
+        return visitorObject("[]", [self.mutable.visit(visitorObject), self.index.visit(visitorObject)])
+

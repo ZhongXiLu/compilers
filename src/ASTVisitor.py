@@ -79,13 +79,13 @@ class ASTVisitor(CVisitor):
     def visitFuncDeclaration(self, ctx:CParser.FuncDeclarationContext):
         name = ctx.Id().getText()
         typeSpecifier =  self.visitTypeSpecifier(ctx.typeSpecifier())
-        args = self.visitParams(ctx.params())
+        params = self.visitParams(ctx.params())
         body = self.visitCompoundStmt(ctx.compoundStmt())
-        return Function.FunctionDecl(name, args, body, typeSpecifier)
+        return Function.FunctionDecl(name, params, body, typeSpecifier)
 
     # Visit a parse tree produced by CParser#params.
     def visitParams(self, ctx:CParser.ParamsContext):
-        return Function.Arguments(self.visitParamList(ctx.paramList()))
+        return Function.Parameters(self.visitParamList(ctx.paramList()))
 
     # Visit a parse tree produced by CParser#paramList.
     def visitParamList(self, ctx:CParser.ParamListContext):
@@ -101,7 +101,7 @@ class ASTVisitor(CVisitor):
     def visitParamTypeList(self, ctx:CParser.ParamTypeListContext):
         typeSpecifier = self.visitTypeSpecifier(ctx.getChild(0))
         name = ctx.Id().getText()
-        return Function.Argument(typeSpecifier, name)
+        return Function.Parameter(typeSpecifier, name)
 
     # Visit a parse tree produced by CParser#expression.
     def visitExpression(self, ctx:CParser.ExpressionContext):
@@ -266,7 +266,36 @@ class ASTVisitor(CVisitor):
     def visitBreakStmt(self, ctx:CParser.BreakStmtContext):
         return Statement.Break()
 
+    # Visit a parse tree produced by CParser#mutable.
+    def visitMutable(self, ctx:CParser.MutableContext):
+        try:
+            return Expression.Mutable(ctx.Id().getText())
+        except:
+            pass
+        mutable = self.visitMutable(ctx.mutable())
+        expression = self.visitExpression(ctx.expression())
+        return Expression.SubScript(mutable, expression)
+
+    # Visit a parse tree produced by CParser#call.
+    def visitCall(self, ctx:CParser.CallContext):
+        funcName = ctx.Id().getText()
+        args = self.visitArgs(ctx.args())
+        return Expression.Call(funcName, args)
+
+    # Visit a parse tree produced by CParser#args.
+    def visitArgs(self, ctx:CParser.ArgsContext):
+        args = []
+        try:
+            args += self.visitArgs(ctx.args())
+            args.append(self.visitExpression(ctx.expression()))
+        except:
+            pass
+        return args
+
     # Visit a parse tree produced by CParser#constant.
     def visitConstant(self, ctx:CParser.ConstantContext):
-        # TODO: fix other types such as CHARCONST
-        return Literals.Number(ctx.NumConst().getText())
+        try:
+            return Literals.Number(ctx.NumConst().getText())
+        except:
+            pass
+        return Literals.String(ctx.CharConst().getText())

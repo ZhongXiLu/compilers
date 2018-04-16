@@ -8,10 +8,10 @@ int main()
       double firstNumber, secondNumber, temporaryVariable;
 
       printf("Enter first number: ");
-      scanf("%lf", &firstNumber);
+      scanf("%lf", firstNumber);
 
       printf("Enter second number: ");
-      scanf("%lf",&secondNumber);
+      scanf("%lf",secondNumber);
 
       // Value of firstNumber is assigned to temporaryVariable
       temporaryVariable = firstNumber;
