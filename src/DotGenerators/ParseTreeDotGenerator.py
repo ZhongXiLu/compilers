@@ -8,7 +8,7 @@ class ParseTreeDotGenerator:
         self.nodes = {}
         self.idCounter = 0
 
-    def generateDOT(self, parser, tree, render=False):
+    def generateDOT(self, parser, tree, fileName, render=False):
         dot = Digraph("Parse Tree")
 
         # Create root
@@ -17,7 +17,7 @@ class ParseTreeDotGenerator:
 
         self.visit(dot, parser, tree, id)
 
-        dot.render("parse_tree.gv", view=render)
+        dot.render(fileName, view=render)
 
     def createIDEntry(self, value):
         id = self.idCounter

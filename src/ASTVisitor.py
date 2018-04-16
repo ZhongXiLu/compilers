@@ -21,8 +21,8 @@ class ASTVisitor(CVisitor):
     def visitDeclarationList(self, ctx:CParser.DeclarationListContext):
         declarations = []
         try:
-            declarations.append(self.visitDeclaration(ctx.declaration()))
             declarations += self.visitDeclarationList(ctx.declarationList())
+            declarations.append(self.visitDeclaration(ctx.declaration()))
         except:
             pass
         return declarations
@@ -111,7 +111,12 @@ class ASTVisitor(CVisitor):
             right = self.visitExpression(ctx.expression())
             return Expression.BinOp(operator, left, right)
         except:
-            return self.visitChildren(ctx)
+            pass
+        try:
+            return self.visitExpression(ctx.expression())
+        except:
+            pass
+        return self.visitChildren(ctx)
 
     # Visit a parse tree produced by CParser#simpleExpression.
     def visitSimpleExpression(self, ctx:CParser.SimpleExpressionContext):

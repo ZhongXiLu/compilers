@@ -3,9 +3,9 @@ import sys
 from antlr4 import *
 from CLexer import CLexer
 from CParser import CParser
-from ParseTreeDotGenerator import ParseTreeDotGenerator
+from DotGenerators.ParseTreeDotGenerator import ParseTreeDotGenerator
 from ASTVisitor import ASTVisitor
-from DotGraphBuilder import *
+from DotGenerators.DotGraphBuilder import DotGraphBuilder
 
 
 def main(argv):
@@ -18,7 +18,7 @@ def main(argv):
 
     # Visualise parse tree
     parseTreeDotGen = ParseTreeDotGenerator()
-    parseTreeDotGen.generateDOT(parser, tree, render=True)
+    parseTreeDotGen.generateDOT(parser, tree, "output/parse_tree.gv", render=True)
 
     # Build AST
     astVisitor = ASTVisitor()
@@ -26,7 +26,7 @@ def main(argv):
 
     # Visualise AST
     dotGraph = AST.visit(DotGraphBuilder)
-    dotGraph.render("ast.gv", view=True)
+    dotGraph.render("output/ast.gv", view=True)
 
 
 if __name__ == '__main__':

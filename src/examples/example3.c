@@ -16,10 +16,10 @@ int main()
     int base, powerRaised, result;
 
     printf("Enter base number: ");
-    scanf("%d",&base);
+    scanf("%d",base);
 
     printf("Enter power number(positive integer): ");
-    scanf("%d",&powerRaised);
+    scanf("%d",powerRaised);
 
     result = power(base, powerRaised);
 

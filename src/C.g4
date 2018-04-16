@@ -147,7 +147,8 @@ breakStmt
 
 // TODO: support '+=', '++', '&&', '%', ...
 expression
-	: mutable '=' expression
+	: '(' expression ')'
+	| mutable '=' expression
 	| simpleExpression
 	;
 
