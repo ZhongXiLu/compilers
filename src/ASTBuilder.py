@@ -9,7 +9,7 @@ from CVisitor import CVisitor
 from AST import Expression, Function, Literals, Program, Statement, Variable
 
 
-class ASTVisitor(CVisitor):
+class ASTBuilder(CVisitor):
 
     # Visit a parse tree produced by CParser#prog.
     def visitProg(self, ctx: CParser.ProgContext):
