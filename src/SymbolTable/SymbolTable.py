@@ -7,30 +7,50 @@ class SymbolInfo:
         self.type = type
 
 
+class Scope:
+
+    def __init__(self):
+        self.table = {}
+        self.children = []
+        self.parent = None
+
+    def newScope(self):
+        newScope = Scope()
+        newScope.parent = self
+        self.children.append(newScope)
+        return newScope
+
+    def endScope(self):
+        return self.parent
+
+
 class SymbolTable:
     """
         SymbolTable:
-        - list of dicts, one dict for each scope
-        - the first (and last added) one, is the current scope
+        - inspiration: http://labouseur.com/courses/compilers/AST-and-Symbol-Table.pdf
+        - Tree structure with scopes as nodes
+        - The current scope is indicated with the currentScope pointer
     """
 
     def __init__(self):
-        self.scopes = []
+        self.scope = Scope()    # Root (most outer scope)
+        self.currentScope = self.scope
 
     def newScope(self):
-        self.scopes.insert(0, {})
+        self.currentScope = self.currentScope.newScope()
 
     def endScope(self):
-        self.scopes.pop(0)
+        self.currentScope = self.currentScope.endScope()
 
     def getSymbol(self, symbol):
-        for scope in self.scopes:
+        currentScopeSearch = self.currentScope
+        while self.currentScopeSearch.parent is not None:
             try:
-                symbolInfo = scope[symbol]
+                symbolInfo = self.currentScopeSearch.table[symbol]
                 return symbolInfo
             except:
-                pass
+                currentScopeSearch = currentScopeSearch.parent
         return None
 
     def addSymbol(self, symbol, symbolInfo):
-        self.scopes[0][symbol] = symbolInfo
+        self.currentScope.table[symbol] = symbolInfo
