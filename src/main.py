@@ -6,6 +6,7 @@ from CParser import CParser
 from DotGenerators.ParseTreeDotGenerator import ParseTreeDotGenerator
 from ASTBuilder import ASTBuilder
 from DotGenerators.DotGraphBuilder import DotGraphBuilder
+from SemanticValidator import SemanticValidator
 
 
 def main(argv):
@@ -27,6 +28,10 @@ def main(argv):
     # Visualise AST
     dotGraph = AST.visit(DotGraphBuilder)
     dotGraph.render("output/ast.gv", view=True)
+
+    # Semantic Validity
+    semanticValidator = SemanticValidator()
+    AST.accept(semanticValidator)
 
 
 if __name__ == '__main__':

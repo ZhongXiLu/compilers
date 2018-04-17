@@ -8,6 +8,10 @@ class Number:
     def visit(self, visitorObject):
         return visitorObject(self.number, [])
 
+    def accept(self, listener):
+        listener.enterNumber(self)
+        listener.exitNumber(self)
+
 
 class String:
 
@@ -16,3 +20,7 @@ class String:
 
     def visit(self, visitorObject):
         return visitorObject(self.string, [])
+
+    def accept(self, listener):
+        listener.enterString(self)
+        listener.exitString(self)

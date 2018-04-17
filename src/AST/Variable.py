@@ -3,11 +3,16 @@
 class VariableDecl:
 
     def __init__(self, type, declList):
-        self.type = type            # Type node
-        self.declList = declList    # DeclList node?
+        self.type = type
+        self.declList = declList    # VarDeclList node
 
     def visit(self, visitorObject):
         return visitorObject("VariableDecl", [self.type, self.declList.visit(visitorObject)])
+
+    def accept(self, listener):
+        listener.enterVariableDecl(self)
+        self.declList.accept(listener)
+        listener.exitVariableDecl(self)
 
 
 class VarDeclList:
@@ -17,6 +22,12 @@ class VarDeclList:
 
     def visit(self, visitorObject):
         return visitorObject("VarDeclList", [declInit.visit(visitorObject) for declInit in self.declInitializeList])
+
+    def accept(self, listener):
+        listener.enterVarDeclList(self)
+        for initialize in self.declInitializeList:
+            initialize.accept(listener)
+        listener.exitVarDeclList(self)
 
 
 class VarDeclInitialize:
@@ -30,3 +41,9 @@ class VarDeclInitialize:
             return visitorObject("=", [self.name, self.expression.visit(visitorObject)])
         else:
             return visitorObject(self.name, [])
+
+    def accept(self, listener):
+        listener.enterVarDeclInitialize(self)
+        if self.expression != None:
+            self.expression.accept(listener)
+        listener.exitVarDeclInitialize(self)

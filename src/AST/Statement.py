@@ -3,12 +3,20 @@
 class Compound:
 
     def __init__(self, localDecls=[], statements=[]):
-        self.statements = statements     # list of Statement nodes
         self.localDecls = localDecls     # list of VariableDecl nodes
+        self.statements = statements     # list of Statement nodes
 
     def visit(self, visitorObject):
         return visitorObject("CompoundStmt", [decl.visit(visitorObject) for decl in self.localDecls] +
                              [stmt.visit(visitorObject) for stmt in self.statements])
+
+    def accept(self, listener):
+        listener.enterCompound(self)
+        for declaration in self.localDecls:
+            declaration.accept(listener)
+        for statement in self.statements:
+            statement.accept(listener)
+        listener.exitCompound(self)
 
 
 class ExpressionStmt:
@@ -18,6 +26,11 @@ class ExpressionStmt:
 
     def visit(self, visitorObject):
         return visitorObject("ExpressionStmt", [self.expression.visit(visitorObject)])
+
+    def accept(self, listener):
+        listener.enterExpressionStmt(self)
+        self.expression.accept(listener)
+        listener.exitExpressionStmt(self)
 
 
 class Return:
@@ -31,11 +44,17 @@ class Return:
         else:
             return visitorObject("Return", [])
 
+    def accept(self, listener):
+        listener.enterReturn(self)
+        if self.expression is not None:
+            self.expression.accept(listener)
+        listener.exitReturn(self)
+
 
 class If:
 
     def __init__(self, expression, body, elseBody=None):
-        self.expression = expression    # Expression nodes
+        self.expression = expression    # Expression node
         self.body = body                # Statement node
         self.elseBody = elseBody        # Statement node (can be empty)
 
@@ -45,6 +64,14 @@ class If:
                                             self.elseBody.visit(visitorObject)])
         else:
             return visitorObject("IfStmt", [self.expression.visit(visitorObject), self.body.visit(visitorObject)])
+
+    def accept(self, listener):
+        listener.enterIf(self)
+        self.expression.accept(listener)
+        self.body.accept(listener)
+        if self.elseBody is not None:
+            self.elseBody.accept(listener)
+        listener.exitIf(self)
 
 
 class While:
@@ -56,6 +83,12 @@ class While:
     def visit(self, visitorObject):
         return visitorObject("While", [self.expression.visit(visitorObject), self.body.visit(visitorObject)])
 
+    def accept(self, listener):
+        listener.enterWhile(self)
+        self.expression.accept(listener)
+        self.body.accept(listener)
+        listener.exitWhile(self)
+
 
 class Break:
 
@@ -64,3 +97,7 @@ class Break:
 
     def visit(self, visitorObject):
         return visitorObject("Break", [])
+
+    def accept(self, listener):
+        listener.enterBreak(self)
+        listener.exitBreak(self)

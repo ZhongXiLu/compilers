@@ -33,6 +33,12 @@ class BinOp:
     def visit(self, visitorObject):
         return visitorObject(self.operator.value, [self.left.visit(visitorObject), self.right.visit(visitorObject)])
 
+    def accept(self, listener):
+        listener.enterBinOp(self)
+        self.left.accept(listener)
+        self.right.accept(listener)
+        listener.exitBinOp(self)
+
 
 class UnaryOp:
 
@@ -42,6 +48,11 @@ class UnaryOp:
 
     def visit(self, visitorObject):
         return visitorObject(self.operator.value, [self.operand.visit(visitorObject)])
+
+    def accept(self, listener):
+        listener.enterUnaryOp(self)
+        self.operand.accept(listener)
+        listener.enterUnaryOp(self)
 
 
 class Call:
@@ -53,6 +64,12 @@ class Call:
     def visit(self, visitorObject):
         return visitorObject(self.funcName, [arg.visit(visitorObject) for arg in self.args])
 
+    def accept(self, listener):
+        listener.enterCall(self)
+        for arg in self.args:
+            arg.accept(listener)
+        listener.exitCall(self)
+
 
 class Mutable:
 
@@ -61,6 +78,10 @@ class Mutable:
 
     def visit(self, visitorObject):
         return visitorObject(self.name, [])
+
+    def accept(self, listener):
+        listener.enterMutable(self)
+        listener.exitMutable(self)
 
 
 class SubScript:
@@ -71,4 +92,10 @@ class SubScript:
 
     def visit(self, visitorObject):
         return visitorObject("[]", [self.mutable.visit(visitorObject), self.index.visit(visitorObject)])
+
+    def accept(self, listener):
+        listener.enterSubScript(self)
+        self.mutable.accept(listener)
+        self.index.accept(listener)
+        listener.exitSubScript(self)
 
