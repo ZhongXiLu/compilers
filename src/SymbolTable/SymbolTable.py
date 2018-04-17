@@ -53,13 +53,21 @@ class SymbolTable:
             currentScopeSearch = currentScopeSearch.parent
 
         # Search in outer scopes
-        while currentScopeSearch.parent is not None:
+        while currentScopeSearch is not None:
             try:
                 symbolInfo = currentScopeSearch.table[symbol]
                 return symbolInfo
             except:
                 currentScopeSearch = currentScopeSearch.parent
         return None
+
+    def getSymbolInCurrentScope(self, symbol):
+        # Search in current scope
+        try:
+            symbolInfo = self.currentScope.table[symbol]
+            return symbolInfo
+        except:
+            return None
 
     def addSymbol(self, symbol, symbolInfo):
         self.currentScope.table[symbol] = symbolInfo

@@ -24,8 +24,8 @@ class SemanticValidator(ASTListener):
     def enterVariableDecl(self, node):
         declList = node.declList
         for varDeclInit in declList.declInitializeList:
-            # Check if new var already exists
-            symbolInfo = self.symbolTable.getSymbol(varDeclInit.name)
+            # Check if new var already exists in current scope
+            symbolInfo = self.symbolTable.getSymbolInCurrentScope(varDeclInit.name)
             if symbolInfo is None:
                 self.symbolTable.addSymbol(varDeclInit.name, node.type)
             else:
@@ -43,12 +43,17 @@ class SemanticValidator(ASTListener):
             self.errors.append("Undefined reference to '" + node.name + "'")
 
     def enterFunctionDecl(self, node):
-        self.symbolTable.addSymbol(node.name, "function")
-        self.symbolTable.newScope()
+        # Check if new function already exists
+        symbolInfo = self.symbolTable.getSymbol(node.name)
+        if symbolInfo is None:
+            self.symbolTable.addSymbol(node.name, "function")
+            self.symbolTable.newScope()
 
-        params = node.params
-        for param in params.params:
-            self.symbolTable.addSymbol(param.name, param.type)
+            params = node.params
+            for param in params.params:
+                self.symbolTable.addSymbol(param.name, param.type)
+        else:
+            self.errors.append("Redefinition of '" + node.name + "'")
 
     def exitFunctionDecl(self, node):
         self.symbolTable.endScope()
