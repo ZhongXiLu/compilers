@@ -1,6 +1,6 @@
 
 from ASTListener import ASTListener
-from SymbolTable.SymbolTable import SymbolTable
+from SymbolTable.SymbolTable import *
 
 
 class SemanticValidator(ASTListener):
@@ -27,31 +27,34 @@ class SemanticValidator(ASTListener):
             # Check if new var already exists in current scope
             symbolInfo = self.symbolTable.getSymbolInCurrentScope(varDeclInit.name)
             if symbolInfo is None:
-                self.symbolTable.addSymbol(varDeclInit.name, node.type)
+                self.symbolTable.addSymbol(varDeclInit.name, VarInfo(node.type))
             else:
                 self.errors.append("Redefinition of '" + varDeclInit.name + "'")
 
     def enterCall(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.funcName)
-        if symbolInfo is None or symbolInfo != "function":  # TODO: make FunctionInfo
+        if symbolInfo is None or type(symbolInfo) is not FunctionInfo:
             if node.funcName != "printf" and node.funcName != "scanf":
                 self.errors.append("Undefined reference to '" + node.funcName + "'")
 
     def enterMutable(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.name)
-        if symbolInfo is None or symbolInfo == "function":  # TODO: make VarInfo
+        if symbolInfo is None or (type(symbolInfo) is not VarInfo and type(symbolInfo) is not ArrayInfo):
             self.errors.append("Undefined reference to '" + node.name + "'")
 
     def enterFunctionDecl(self, node):
         # Check if new function already exists
         symbolInfo = self.symbolTable.getSymbol(node.name)
         if symbolInfo is None:
-            self.symbolTable.addSymbol(node.name, "function")
+            params = node.params
+            paramTypes = []
+            for param in params.params:
+                paramTypes.append(param.type)
+                self.symbolTable.addSymbol(param.name, VarInfo(param.type))
+
+            self.symbolTable.addSymbol(node.name, FunctionInfo(node.returns, paramTypes))
             self.symbolTable.newScope()
 
-            params = node.params
-            for param in params.params:
-                self.symbolTable.addSymbol(param.name, param.type)
         else:
             self.errors.append("Redefinition of '" + node.name + "'")
 

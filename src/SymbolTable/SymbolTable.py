@@ -1,10 +1,25 @@
 
 
-# TODO: split in variable and function info?
-class SymbolInfo:
+class VarInfo:
 
     def __init__(self, type):
         self.type = type
+        # self.declLineNr
+        # self.refLineNrs
+
+
+class FunctionInfo:
+
+    def __init__(self, returnType, paramTypes):
+        self.returnType = returnType
+        self.paramTypes = paramTypes
+
+
+class ArrayInfo:
+
+    def __init__(self, type, size):
+        self.type = type
+        self.size = size
 
 
 class Scope:
