@@ -33,6 +33,9 @@ def main(argv):
     semanticValidator = SemanticValidator()
     AST.accept(semanticValidator)
 
+    # Print errors, if any
+    for error in semanticValidator.errors:
+        print(error)
 
 if __name__ == '__main__':
     main(sys.argv)

@@ -44,9 +44,18 @@ class SymbolTable:
 
     def getSymbol(self, symbol):
         currentScopeSearch = self.currentScope
-        while self.currentScopeSearch.parent is not None:
+
+        # Search in current scope
+        try:
+            symbolInfo = currentScopeSearch.table[symbol]
+            return symbolInfo
+        except:
+            currentScopeSearch = currentScopeSearch.parent
+
+        # Search in outer scopes
+        while currentScopeSearch.parent is not None:
             try:
-                symbolInfo = self.currentScopeSearch.table[symbol]
+                symbolInfo = currentScopeSearch.table[symbol]
                 return symbolInfo
             except:
                 currentScopeSearch = currentScopeSearch.parent

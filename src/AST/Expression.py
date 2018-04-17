@@ -3,7 +3,7 @@ from enum import Enum
 
 
 class BinOpTokens(Enum):
-    ASSIGN = "="
+    ASSIGN = "="    # TODO: remove this: '=' is not a binary operation
     AND = "&&"
     OR = "||"
     LT = "<"
