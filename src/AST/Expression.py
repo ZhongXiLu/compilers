@@ -3,7 +3,6 @@ from enum import Enum
 
 
 class BinOpTokens(Enum):
-    ASSIGN = "="    # TODO: remove this: '=' is not a binary operation
     AND = "&&"
     OR = "||"
     LT = "<"
@@ -21,6 +20,22 @@ class BinOpTokens(Enum):
 class UnaryOpTokens(Enum):
     NEG = "!"
     MIN = "-"
+
+
+class Assign:
+
+    def __init__(self, left, right):
+        self.left = left            # Mutable node
+        self.right = right          # Expression node
+
+    def visit(self, visitorObject):
+        return visitorObject("=", [self.left.visit(visitorObject), self.right.visit(visitorObject)])
+
+    def accept(self, listener):
+        listener.enterAssign(self)
+        self.left.accept(listener)
+        self.right.accept(listener)
+        listener.exitAssign(self)
 
 
 class BinOp:

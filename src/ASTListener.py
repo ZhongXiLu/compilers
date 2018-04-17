@@ -32,6 +32,12 @@ class ASTListener:
     def exitDelcaration(self, node):
         pass
 
+    def enterAssign(self, node):
+        pass
+
+    def exitAssign(self, node):
+        pass
+
     def enterBinOp(self, node):
         pass
 

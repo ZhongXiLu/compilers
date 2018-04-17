@@ -78,10 +78,18 @@ class ASTBuilder(CVisitor):
     # Visit a parse tree produced by CParser#funcDeclaration.
     def visitFuncDeclaration(self, ctx:CParser.FuncDeclarationContext):
         name = ctx.Id().getText()
-        typeSpecifier =  self.visitTypeSpecifier(ctx.typeSpecifier())
+        typeSpecifier =  self.visitFunctionTypeSpecifier(ctx.functionTypeSpecifier())
         params = self.visitParams(ctx.params())
         body = self.visitCompoundStmt(ctx.compoundStmt())
         return Function.FunctionDecl(name, params, body, typeSpecifier)
+
+    # Visit a parse tree produced by CParser#functionTypeSpecifier.
+    def visitFunctionTypeSpecifier(self, ctx:CParser.FunctionTypeSpecifierContext):
+        try:
+            return self.visitTypeSpecifier(ctx.typeSpecifier())
+        except:
+            pass
+        return ctx.getText()
 
     # Visit a parse tree produced by CParser#params.
     def visitParams(self, ctx:CParser.ParamsContext):
@@ -106,10 +114,9 @@ class ASTBuilder(CVisitor):
     # Visit a parse tree produced by CParser#expression.
     def visitExpression(self, ctx:CParser.ExpressionContext):
         try:
-            operator = Expression.BinOpTokens.ASSIGN
             left = self.visitMutable(ctx.mutable())
             right = self.visitExpression(ctx.expression())
-            return Expression.BinOp(operator, left, right)
+            return Expression.Assign(left, right)
         except:
             pass
         try:

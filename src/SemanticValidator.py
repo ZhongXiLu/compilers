@@ -24,7 +24,12 @@ class SemanticValidator(ASTListener):
     def enterVariableDecl(self, node):
         declList = node.declList
         for varDeclInit in declList.declInitializeList:
-            self.symbolTable.addSymbol(varDeclInit.name, node.type)
+            # Check if new var already exists
+            symbolInfo = self.symbolTable.getSymbol(varDeclInit.name)
+            if symbolInfo is None:
+                self.symbolTable.addSymbol(varDeclInit.name, node.type)
+            else:
+                self.errors.append("Redefinition of '" + varDeclInit.name + "'")
 
     def enterCall(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.funcName)

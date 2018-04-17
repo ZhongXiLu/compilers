@@ -68,9 +68,14 @@ typeSpecifier
 // ===============================================
 
 funcDeclaration
-	: typeSpecifier Id '(' params ')' compoundStmt
+	: functionTypeSpecifier Id '(' params ')' compoundStmt
 	// | ID '(' params ')' compoundStmt 	// TODO: is this correct C ?
 	;
+
+functionTypeSpecifier
+    : 'void'
+    | typeSpecifier
+    ;
 
 params
 	: paramList
