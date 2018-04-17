@@ -1,8 +1,11 @@
 
+from AST.ASTNode import ASTNode
 
-class VariableDecl:
 
-    def __init__(self, type, declList):
+class VariableDecl(ASTNode):
+
+    def __init__(self, lineNr, positionNr, type, declList):
+        super().__init__(lineNr, positionNr)
         self.type = type
         self.declList = declList    # VarDeclList node
 
@@ -15,9 +18,10 @@ class VariableDecl:
         listener.exitVariableDecl(self)
 
 
-class VarDeclList:
+class VarDeclList(ASTNode):
 
-    def __init__(self, declInitializeList):
+    def __init__(self, lineNr, positionNr, declInitializeList):
+        super().__init__(lineNr, positionNr)
         self.declInitializeList = declInitializeList    # list of VarDeclInitialize nodes
 
     def visit(self, visitorObject):
@@ -30,9 +34,10 @@ class VarDeclList:
         listener.exitVarDeclList(self)
 
 
-class VarDeclInitialize:
+class VarDeclInitialize(ASTNode):
 
-    def __init__(self, name, expression=None):
+    def __init__(self, lineNr, positionNr, name, expression=None):
+        super().__init__(lineNr, positionNr)
         self.name = name                # string
         self.expression = expression    # Expression node
 

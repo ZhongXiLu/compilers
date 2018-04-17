@@ -13,9 +13,9 @@ class ASTBuilder(CVisitor):
 
     # Visit a parse tree produced by CParser#prog.
     def visitProg(self, ctx: CParser.ProgContext):
-        includes = Program.Includes(self.visitIncludes(ctx.includes()))
-        declarationList = Program.DeclarationList(self.visitDeclarationList(ctx.declarationList()))
-        return Program.Program(includes, declarationList)
+        includes = Program.Includes(ctx.start.line, ctx.start.column, self.visitIncludes(ctx.includes()))
+        declarationList = Program.DeclarationList(ctx.start.line, ctx.start.column, self.visitDeclarationList(ctx.declarationList()))
+        return Program.Program(ctx.start.line, ctx.start.column, includes, declarationList)
 
     # Visit a parse tree produced by CParser#declarationList.
     def visitDeclarationList(self, ctx:CParser.DeclarationListContext):
@@ -43,13 +43,13 @@ class ASTBuilder(CVisitor):
 
     # Visit a parse tree produced by CParser#include.
     def visitInclude(self, ctx: CParser.IncludeContext):
-        return Program.Include(ctx.Library().getText())
+        return Program.Include(ctx.start.line, ctx.start.column, ctx.Library().getText())
 
     # Visit a parse tree produced by CParser#varDeclaration.
     def visitVarDeclaration(self, ctx:CParser.VarDeclarationContext):
         type = self.visitTypeSpecifier(ctx.typeSpecifier())
-        varDeclList = Variable.VarDeclList(self.visitVarDeclList(ctx.varDeclList()))
-        return Variable.VariableDecl(type, varDeclList)
+        varDeclList = Variable.VarDeclList(ctx.start.line, ctx.start.column, self.visitVarDeclList(ctx.varDeclList()))
+        return Variable.VariableDecl(ctx.start.line, ctx.start.column, type, varDeclList)
 
     # Visit a parse tree produced by CParser#varDeclList.
     def visitVarDeclList(self, ctx:CParser.VarDeclListContext):
@@ -69,7 +69,7 @@ class ASTBuilder(CVisitor):
             expression = self.visitSimpleExpression(ctx.simpleExpression())
         except:
             pass
-        return Variable.VarDeclInitialize(name, expression)
+        return Variable.VarDeclInitialize(ctx.start.line, ctx.start.column, name, expression)
 
     # Visit a parse tree produced by CParser#typeSpecifier.
     def visitTypeSpecifier(self, ctx:CParser.TypeSpecifierContext):
@@ -81,7 +81,7 @@ class ASTBuilder(CVisitor):
         typeSpecifier =  self.visitFunctionTypeSpecifier(ctx.functionTypeSpecifier())
         params = self.visitParams(ctx.params())
         body = self.visitCompoundStmt(ctx.compoundStmt())
-        return Function.FunctionDecl(name, params, body, typeSpecifier)
+        return Function.FunctionDecl(ctx.start.line, ctx.start.column, name, params, body, typeSpecifier)
 
     # Visit a parse tree produced by CParser#functionTypeSpecifier.
     def visitFunctionTypeSpecifier(self, ctx:CParser.FunctionTypeSpecifierContext):
@@ -93,7 +93,7 @@ class ASTBuilder(CVisitor):
 
     # Visit a parse tree produced by CParser#params.
     def visitParams(self, ctx:CParser.ParamsContext):
-        return Function.Parameters(self.visitParamList(ctx.paramList()))
+        return Function.Parameters(ctx.start.line, ctx.start.column, self.visitParamList(ctx.paramList()))
 
     # Visit a parse tree produced by CParser#paramList.
     def visitParamList(self, ctx:CParser.ParamListContext):
@@ -109,14 +109,14 @@ class ASTBuilder(CVisitor):
     def visitParamTypeList(self, ctx:CParser.ParamTypeListContext):
         typeSpecifier = self.visitTypeSpecifier(ctx.getChild(0))
         name = ctx.Id().getText()
-        return Function.Parameter(typeSpecifier, name)
+        return Function.Parameter(ctx.start.line, ctx.start.column, typeSpecifier, name)
 
     # Visit a parse tree produced by CParser#expression.
     def visitExpression(self, ctx:CParser.ExpressionContext):
         try:
             left = self.visitMutable(ctx.mutable())
             right = self.visitExpression(ctx.expression())
-            return Expression.Assign(left, right)
+            return Expression.Assign(ctx.start.line, ctx.start.column, left, right)
         except:
             pass
         try:
@@ -131,7 +131,7 @@ class ASTBuilder(CVisitor):
             operator = Expression.BinOpTokens.OR
             left = self.visitSimpleExpression(ctx.simpleExpression())
             right = self.visitAndExpression(ctx.andExpression())
-            return Expression.BinOp(operator, left, right)
+            return Expression.BinOp(ctx.start.line, ctx.start.column, operator, left, right)
         except:
             return self.visitChildren(ctx)
 
@@ -141,7 +141,7 @@ class ASTBuilder(CVisitor):
             operator = Expression.BinOpTokens.AND
             left = self.visitAndExpression(ctx.andExpression())
             right = self.visitUnaryRelExpression(ctx.unaryRelExpression())
-            return Expression.BinOp(operator, left, right)
+            return Expression.BinOp(ctx.start.line, ctx.start.column, operator, left, right)
         except:
             return self.visitChildren(ctx)
 
@@ -150,7 +150,7 @@ class ASTBuilder(CVisitor):
         try:
             operator = Expression.UnaryOpTokens.NEG
             operand = self.visitUnaryRelExpression(ctx.unaryRelExpression())
-            return Expression.UnaryOp(operator, operand)
+            return Expression.UnaryOp(ctx.start.line, ctx.start.column, operator, operand)
         except:
             return self.visitChildren(ctx)
 
@@ -160,7 +160,7 @@ class ASTBuilder(CVisitor):
             operator = Expression.BinOpTokens(self.visitRelOp(ctx.relOp()))
             left = self.visitSumExpression(ctx.sumExpression(0))
             right = self.visitSumExpression(ctx.sumExpression(1))
-            return Expression.BinOp(operator, left, right)
+            return Expression.BinOp(ctx.start.line, ctx.start.column, operator, left, right)
         except:
             return self.visitChildren(ctx)
 
@@ -174,7 +174,7 @@ class ASTBuilder(CVisitor):
             operator = Expression.BinOpTokens(self.visitSumOp(ctx.sumOp()))
             left = self.visitSumExpression(ctx.sumExpression())
             right = self.visitTerm(ctx.term())
-            return Expression.BinOp(operator, left, right)
+            return Expression.BinOp(ctx.start.line, ctx.start.column, operator, left, right)
         except:
             return self.visitChildren(ctx)
 
@@ -188,7 +188,7 @@ class ASTBuilder(CVisitor):
             operator = Expression.BinOpTokens(self.visitMulOp(ctx.mulOp()))
             left = self.visitTerm(ctx.term())
             right = self.visitUnaryExpression(ctx.unaryExpression())
-            return Expression.BinOp(operator, left, right)
+            return Expression.BinOp(ctx.start.line, ctx.start.column, operator, left, right)
         except:
             return self.visitChildren(ctx)
 
@@ -201,7 +201,7 @@ class ASTBuilder(CVisitor):
         try:
             operator = Expression.UnaryOpTokens(self.visitUnaryOp(ctx.unaryOp()))
             operand = self.visitUnaryExpression(ctx.unaryExpression())
-            return Expression.UnaryOp(operator, operand)
+            return Expression.UnaryOp(ctx.start.line, ctx.start.column, operator, operand)
         except:
             return self.visitChildren(ctx)
 
@@ -221,7 +221,7 @@ class ASTBuilder(CVisitor):
             localDecls += self.visitLocalDeclarations(ctx.localDeclarations())
         except:
             pass
-        return Statement.Compound(localDecls, statements)
+        return Statement.Compound(ctx.start.line, ctx.start.column, localDecls, statements)
 
     # Visit a parse tree produced by CParser#localDeclarations.
     def visitLocalDeclarations(self, ctx:CParser.LocalDeclarationsContext):
@@ -246,7 +246,7 @@ class ASTBuilder(CVisitor):
     # Visit a parse tree produced by CParser#expressionStmt.
     def visitExpressionStmt(self, ctx:CParser.ExpressionStmtContext):
         expression = self.visitExpression(ctx.expression())
-        return Statement.ExpressionStmt(expression)
+        return Statement.ExpressionStmt(ctx.start.line, ctx.start.column, expression)
 
     # Visit a parse tree produced by CParser#selectionStmt.
     def visitSelectionStmt(self, ctx:CParser.SelectionStmtContext):
@@ -257,13 +257,13 @@ class ASTBuilder(CVisitor):
             elseBody = self.visitStatement(ctx.statement(1))
         except:
             pass
-        return Statement.If(expression, body, elseBody)
+        return Statement.If(ctx.start.line, ctx.start.column, expression, body, elseBody)
 
     # Visit a parse tree produced by CParser#iterationStmt.
     def visitIterationStmt(self, ctx:CParser.IterationStmtContext):
         expression = self.visitSimpleExpression(ctx.simpleExpression())
         body = self.visitStatement(ctx.statement())
-        return Statement.While(expression, body)
+        return Statement.While(ctx.start.line, ctx.start.column, expression, body)
 
     # Visit a parse tree produced by CParser#returnStmt.
     def visitReturnStmt(self, ctx:CParser.ReturnStmtContext):
@@ -272,27 +272,27 @@ class ASTBuilder(CVisitor):
             expression = self.visitExpression(ctx.expression())
         except:
             pass
-        return Statement.Return(expression)
+        return Statement.Return(ctx.start.line, ctx.start.column, expression)
 
     # Visit a parse tree produced by CParser#breakStmt.
     def visitBreakStmt(self, ctx:CParser.BreakStmtContext):
-        return Statement.Break()
+        return Statement.Break(ctx.start.line, ctx.start.column)
 
     # Visit a parse tree produced by CParser#mutable.
     def visitMutable(self, ctx:CParser.MutableContext):
         try:
-            return Expression.Mutable(ctx.Id().getText())
+            return Expression.Mutable(ctx.start.line, ctx.start.column, ctx.Id().getText())
         except:
             pass
         mutable = self.visitMutable(ctx.mutable())
         expression = self.visitExpression(ctx.expression())
-        return Expression.SubScript(mutable, expression)
+        return Expression.SubScript(ctx.start.line, ctx.start.column, mutable, expression)
 
     # Visit a parse tree produced by CParser#call.
     def visitCall(self, ctx:CParser.CallContext):
         funcName = ctx.Id().getText()
         args = self.visitArgs(ctx.args())
-        return Expression.Call(funcName, args)
+        return Expression.Call(ctx.start.line, ctx.start.column, funcName, args)
 
     # Visit a parse tree produced by CParser#args.
     def visitArgs(self, ctx:CParser.ArgsContext):
@@ -307,7 +307,7 @@ class ASTBuilder(CVisitor):
     # Visit a parse tree produced by CParser#constant.
     def visitConstant(self, ctx:CParser.ConstantContext):
         try:
-            return Literals.Number(ctx.NumConst().getText())
+            return Literals.Number(ctx.start.line, ctx.start.column, ctx.NumConst().getText())
         except:
             pass
-        return Literals.String(ctx.CharConst().getText())
+        return Literals.String(ctx.start.line, ctx.start.column, ctx.CharConst().getText())

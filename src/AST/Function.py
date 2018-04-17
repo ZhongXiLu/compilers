@@ -1,8 +1,11 @@
 
+from AST.ASTNode import ASTNode
 
-class FunctionDecl:
 
-    def __init__(self, name, params, body, returns):
+class FunctionDecl(ASTNode):
+
+    def __init__(self, lineNr, positionNr, name, params, body, returns):
+        super().__init__(lineNr, positionNr)
         self.name = name        # string
         self.params = params    # Parameters node
         self.body = body        # Compound node
@@ -19,9 +22,10 @@ class FunctionDecl:
         listener.exitFunctionDecl(self)
 
 
-class Parameters:
+class Parameters(ASTNode):
 
-    def __init__(self, params):
+    def __init__(self, lineNr, positionNr, params):
+        super().__init__(lineNr, positionNr)
         self.params = params        # list of Parameter nodes
 
     def visit(self, visitorObject):
@@ -34,9 +38,10 @@ class Parameters:
         listener.exitParameters(self)
 
 
-class Parameter:
+class Parameter(ASTNode):
 
-    def __init__(self, type, name):
+    def __init__(self, lineNr, positionNr, type, name):
+        super().__init__(lineNr, positionNr)
         self.type = type    # string
         self.name = name    # string
 

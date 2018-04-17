@@ -29,18 +29,18 @@ class SemanticValidator(ASTListener):
             if symbolInfo is None:
                 self.symbolTable.addSymbol(varDeclInit.name, VarInfo(node.type))
             else:
-                self.errors.append("Redefinition of '" + varDeclInit.name + "'")
+                self.errors.append(varDeclInit.getPosition() + ": Redefinition of '" + varDeclInit.name + "'")
 
     def enterCall(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.funcName)
         if symbolInfo is None or type(symbolInfo) is not FunctionInfo:
             if node.funcName != "printf" and node.funcName != "scanf":
-                self.errors.append("Undefined reference to '" + node.funcName + "'")
+                self.errors.append(node.getPosition() + ": Undefined reference to '" + node.funcName + "'")
 
     def enterMutable(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.name)
         if symbolInfo is None or (type(symbolInfo) is not VarInfo and type(symbolInfo) is not ArrayInfo):
-            self.errors.append("Undefined reference to '" + node.name + "'")
+            self.errors.append(node.getPosition() + ": Undefined reference to '" + node.name + "'")
 
     def enterFunctionDecl(self, node):
         # Check if new function already exists
@@ -56,7 +56,7 @@ class SemanticValidator(ASTListener):
             self.symbolTable.newScope()
 
         else:
-            self.errors.append("Redefinition of '" + node.name + "'")
+            self.errors.append(node.getPosition() + ": Redefinition of '" + node.name + "'")
 
     def exitFunctionDecl(self, node):
         self.symbolTable.endScope()

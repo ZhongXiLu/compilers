@@ -1,4 +1,5 @@
 
+from AST.ASTNode import ASTNode
 from enum import Enum
 
 
@@ -22,9 +23,10 @@ class UnaryOpTokens(Enum):
     MIN = "-"
 
 
-class Assign:
+class Assign(ASTNode):
 
-    def __init__(self, left, right):
+    def __init__(self, lineNr, positionNr, left, right):
+        super().__init__(lineNr, positionNr)
         self.left = left            # Mutable node
         self.right = right          # Expression node
 
@@ -38,9 +40,10 @@ class Assign:
         listener.exitAssign(self)
 
 
-class BinOp:
+class BinOp(ASTNode):
 
-    def __init__(self, operator, left, right):
+    def __init__(self, lineNr, positionNr, operator, left, right):
+        super().__init__(lineNr, positionNr)
         self.operator = operator    # BinOpToken
         self.left = left            # Expression node
         self.right = right          # Expression node
@@ -55,9 +58,10 @@ class BinOp:
         listener.exitBinOp(self)
 
 
-class UnaryOp:
+class UnaryOp(ASTNode):
 
-    def __init__(self, operator, operand):
+    def __init__(self, lineNr, positionNr, operator, operand):
+        super().__init__(lineNr, positionNr)
         self.operator = operator    # UnaryOpToken
         self.operand = operand      # Expression node
 
@@ -70,9 +74,10 @@ class UnaryOp:
         listener.enterUnaryOp(self)
 
 
-class Call:
+class Call(ASTNode):
 
-    def __init__(self, funcName, args):
+    def __init__(self, lineNr, positionNr, funcName, args):
+        super().__init__(lineNr, positionNr)
         self.funcName = funcName    # string
         self.args = args            # list of expressions
 
@@ -86,9 +91,10 @@ class Call:
         listener.exitCall(self)
 
 
-class Mutable:
+class Mutable(ASTNode):
 
-    def __init__(self, name):
+    def __init__(self, lineNr, positionNr, name):
+        super().__init__(lineNr, positionNr)
         self.name = name    # string
 
     def visit(self, visitorObject):
@@ -99,9 +105,10 @@ class Mutable:
         listener.exitMutable(self)
 
 
-class SubScript:
+class SubScript(ASTNode):
 
-    def __init__(self, mutable, index):
+    def __init__(self, lineNr, positionNr, mutable, index):
+        super().__init__(lineNr, positionNr)
         self.mutable = mutable  # Mutable node
         self.index = index      # Expression node
 

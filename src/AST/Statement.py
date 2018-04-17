@@ -1,8 +1,11 @@
 
+from AST.ASTNode import ASTNode
 
-class Compound:
 
-    def __init__(self, localDecls=[], statements=[]):
+class Compound(ASTNode):
+
+    def __init__(self, lineNr, positionNr, localDecls=[], statements=[]):
+        super().__init__(lineNr, positionNr)
         self.localDecls = localDecls     # list of VariableDecl nodes
         self.statements = statements     # list of Statement nodes
 
@@ -19,9 +22,10 @@ class Compound:
         listener.exitCompound(self)
 
 
-class ExpressionStmt:
+class ExpressionStmt(ASTNode):
 
-    def __init__(self, expression):
+    def __init__(self, lineNr, positionNr, expression):
+        super().__init__(lineNr, positionNr)
         self.expression = expression    # Expression node
 
     def visit(self, visitorObject):
@@ -33,9 +37,10 @@ class ExpressionStmt:
         listener.exitExpressionStmt(self)
 
 
-class Return:
+class Return(ASTNode):
 
-    def __init__(self, expression=None):
+    def __init__(self, lineNr, positionNr, expression=None):
+        super().__init__(lineNr, positionNr)
         self.expression = expression
 
     def visit(self, visitorObject):
@@ -51,9 +56,10 @@ class Return:
         listener.exitReturn(self)
 
 
-class If:
+class If(ASTNode):
 
-    def __init__(self, expression, body, elseBody=None):
+    def __init__(self, lineNr, positionNr, expression, body, elseBody=None):
+        super().__init__(lineNr, positionNr)
         self.expression = expression    # Expression node
         self.body = body                # Statement node
         self.elseBody = elseBody        # Statement node (can be empty)
@@ -74,9 +80,10 @@ class If:
         listener.exitIf(self)
 
 
-class While:
+class While(ASTNode):
 
-    def __init__(self, expression, body):
+    def __init__(self, lineNr, positionNr, expression, body):
+        super().__init__(lineNr, positionNr)
         self.expression = expression    # Expression nodes
         self.body = body                # Statement node
 
@@ -90,9 +97,10 @@ class While:
         listener.exitWhile(self)
 
 
-class Break:
+class Break(ASTNode):
 
-    def __init__(self):
+    def __init__(self, lineNr, positionNr):
+        super().__init__(lineNr, positionNr)
         pass
 
     def visit(self, visitorObject):

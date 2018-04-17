@@ -1,8 +1,11 @@
 
+from AST.ASTNode import ASTNode
 
-class Number:
 
-    def __init__(self, number):
+class Number(ASTNode):
+
+    def __init__(self, lineNr, positionNr, number):
+        super().__init__(lineNr, positionNr)
         self.number = number
 
     def visit(self, visitorObject):
@@ -13,9 +16,10 @@ class Number:
         listener.exitNumber(self)
 
 
-class String:
+class String(ASTNode):
 
-    def __init__(self, string):
+    def __init__(self, lineNr, positionNr, string):
+        super().__init__(lineNr, positionNr)
         self.string = string
 
     def visit(self, visitorObject):

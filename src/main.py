@@ -29,13 +29,13 @@ def main(argv):
     dotGraph = AST.visit(DotGraphBuilder)
     dotGraph.render("output/ast.gv", view=True)
 
-    # Semantic Validity
+    # Semantic Validition
     semanticValidator = SemanticValidator()
     AST.accept(semanticValidator)
 
     # Print errors, if any
     for error in semanticValidator.errors:
-        print(error)
+        print("ERROR: " + error)
 
 if __name__ == '__main__':
     main(sys.argv)

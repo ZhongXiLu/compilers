@@ -1,8 +1,11 @@
 
+from AST.ASTNode import ASTNode
 
-class Program:
 
-    def __init__(self, includes, declarationList):
+class Program(ASTNode):
+
+    def __init__(self, lineNr, positionNr, includes, declarationList):
+        super().__init__(lineNr, positionNr)
         self.includes = includes
         self.declarationList = declarationList
 
@@ -16,9 +19,10 @@ class Program:
         listener.exitProgram(self)
 
 
-class Includes:
+class Includes(ASTNode):
 
-    def __init__(self, includes):
+    def __init__(self, lineNr, positionNr, includes):
+        super().__init__(lineNr, positionNr)
         self.includes = includes    # list of Include nodes
 
     def visit(self, visitorObject):
@@ -31,9 +35,10 @@ class Includes:
         listener.exitIncludes(self)
 
 
-class Include:
+class Include(ASTNode):
 
-    def __init__(self, name):
+    def __init__(self, lineNr, positionNr, name):
+        super().__init__(lineNr, positionNr)
         self.name = name    # string
 
     def visit(self, visitorObject):
@@ -44,9 +49,10 @@ class Include:
         listener.exitInclude(self)
 
 
-class DeclarationList:
+class DeclarationList(ASTNode):
 
-    def __init__(self, declarations):
+    def __init__(self, lineNr, positionNr, declarations):
+        super().__init__(lineNr, positionNr)
         self.declarations = declarations    # list of Declaration nodes
 
     def visit(self, visitorObject):
