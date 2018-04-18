@@ -67,7 +67,13 @@ class ASTBuilder(CVisitor):
         # Check if it's an array initialization
         try:
             size = ctx.IntConst().getText()
-            return Variable.ArrayInitialize(ctx.start.line, ctx.start.column, name, size)
+            initializeList = None
+            try:
+                initializeList = Variable.ArrayInitialize(ctx.start.line, ctx.start.column, self.visitArrayInitialize(ctx.arrayInitialize()))
+            except:
+                pass
+            return Variable.Array(ctx.start.line, ctx.start.column, name, size, initializeList)
+
         except:
             expression = None
             try:
@@ -75,6 +81,16 @@ class ASTBuilder(CVisitor):
             except:
                 pass
             return Variable.VarDeclInitialize(ctx.start.line, ctx.start.column, name, expression)
+
+    # Visit a parse tree produced by CParser#arrayInitialize.
+    def visitArrayInitialize(self, ctx:CParser.ArrayInitializeContext):
+        initializeList = []
+        try:
+            initializeList += self.visitArrayInitialize(ctx.arrayInitialize())
+            initializeList.append(self.visitSimpleExpression(ctx.simpleExpression()))
+        except:
+            pass
+        return initializeList
 
     # Visit a parse tree produced by CParser#typeSpecifier.
     def visitTypeSpecifier(self, ctx:CParser.TypeSpecifierContext):

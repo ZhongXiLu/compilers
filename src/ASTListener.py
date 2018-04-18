@@ -158,6 +158,12 @@ class ASTListener:
     def exitVarDeclInitialize(self, node):
         pass
 
+    def enterArray(self, node):
+        pass
+
+    def exitArray(self, node):
+        pass
+
     def enterArrayInitialize(self, node):
         pass
 

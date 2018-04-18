@@ -54,15 +54,33 @@ class VarDeclInitialize(ASTNode):
         listener.exitVarDeclInitialize(self)
 
 
-class ArrayInitialize(ASTNode):
+class Array(ASTNode):
 
-    def __init__(self, lineNr, positionNr, name, size):
+    def __init__(self, lineNr, positionNr, name, size, initialize=None):
         super().__init__(lineNr, positionNr)
-        self.name = name    # string
-        self.size = size    # int
+        self.name = name                # string
+        self.size = size                # int
+        self.initialize = initialize    # ArrayInitialize node
 
     def visit(self, visitorObject):
-        return visitorObject("ArrayInitialize", [self.name, self.size])
+        if self.initialize is not None:
+            return visitorObject("Array", [self.name, self.size, self.initialize.visit(visitorObject)])
+        else:
+            return visitorObject("Array", [self.name, self.size])
+
+    def accept(self, listener):
+        listener.enterArray(self)
+        listener.exitArray(self)
+
+
+class ArrayInitialize(ASTNode):
+
+    def __init__(self, lineNr, positionNr, inititializeList=[]):
+        super().__init__(lineNr, positionNr)
+        self.list = inititializeList    # list of Expression nodes
+
+    def visit(self, visitorObject):
+        return visitorObject("ArrayInitializeList", [init.visit(visitorObject) for init in self.list])
 
     def accept(self, listener):
         listener.enterArrayInitialize(self)

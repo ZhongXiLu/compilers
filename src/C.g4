@@ -50,7 +50,13 @@ varDeclInitialize
 	: Id
 	| Id '=' simpleExpression
 	| Id '[' IntConst ']'
+	| Id '[' IntConst ']' '=' '{' arrayInitialize '}'
 	;
+
+arrayInitialize
+    : arrayInitialize ',' simpleExpression
+    | simpleExpression
+    ;
 
 typeSpecifier
 	: 'char'
