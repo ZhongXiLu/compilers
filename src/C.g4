@@ -50,11 +50,11 @@ varDeclInitialize
 	: Id
 	| Id '=' simpleExpression
 	| Id '[' IntConst ']'
-	| Id '[' IntConst ']' '=' '{' arrayInitialize '}'
+	| Id '[' IntConst ']' '=' '{' arrayInitializeList '}'
 	;
 
-arrayInitialize
-    : arrayInitialize ',' simpleExpression
+arrayInitializeList
+    : arrayInitializeList ',' simpleExpression
     | simpleExpression
     ;
 

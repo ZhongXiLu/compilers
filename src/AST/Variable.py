@@ -22,7 +22,7 @@ class VarDeclList(ASTNode):
 
     def __init__(self, lineNr, positionNr, declInitializeList):
         super().__init__(lineNr, positionNr)
-        self.declInitializeList = declInitializeList    # list of VarDeclInitialize nodes
+        self.declInitializeList = declInitializeList    # list of VarDeclInitialize/Array nodes
 
     def visit(self, visitorObject):
         return visitorObject("VarDeclList", [declInit.visit(visitorObject) for declInit in self.declInitializeList])
@@ -54,7 +54,7 @@ class VarDeclInitialize(ASTNode):
         listener.exitVarDeclInitialize(self)
 
 
-class Array(ASTNode):
+class ArrayInitialize(ASTNode):
 
     def __init__(self, lineNr, positionNr, name, size, initialize=None):
         super().__init__(lineNr, positionNr)
@@ -64,16 +64,16 @@ class Array(ASTNode):
 
     def visit(self, visitorObject):
         if self.initialize is not None:
-            return visitorObject("Array", [self.name, self.size, self.initialize.visit(visitorObject)])
+            return visitorObject("ArrayInitialize", [self.name, self.size, self.initialize.visit(visitorObject)])
         else:
-            return visitorObject("Array", [self.name, self.size])
+            return visitorObject("ArrayInitialize", [self.name, self.size])
 
     def accept(self, listener):
-        listener.enterArray(self)
-        listener.exitArray(self)
+        listener.enterArrayInitialize(self)
+        listener.exitArrayInitialize(self)
 
 
-class ArrayInitialize(ASTNode):
+class ArrayInitializeList(ASTNode):
 
     def __init__(self, lineNr, positionNr, inititializeList=[]):
         super().__init__(lineNr, positionNr)
@@ -83,5 +83,5 @@ class ArrayInitialize(ASTNode):
         return visitorObject("ArrayInitializeList", [init.visit(visitorObject) for init in self.list])
 
     def accept(self, listener):
-        listener.enterArrayInitialize(self)
-        listener.exitArrayInitialize(self)
+        listener.enterArrayInitializeList(self)
+        listener.exitArrayInitializeList(self)

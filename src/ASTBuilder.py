@@ -69,10 +69,11 @@ class ASTBuilder(CVisitor):
             size = ctx.IntConst().getText()
             initializeList = None
             try:
-                initializeList = Variable.ArrayInitialize(ctx.start.line, ctx.start.column, self.visitArrayInitialize(ctx.arrayInitialize()))
+                list = self.visitArrayInitializeList(ctx.arrayInitializeList())
+                initializeList = Variable.ArrayInitializeList(ctx.start.line, ctx.start.column, list)
             except:
                 pass
-            return Variable.Array(ctx.start.line, ctx.start.column, name, size, initializeList)
+            return Variable.ArrayInitialize(ctx.start.line, ctx.start.column, name, size, initializeList)
 
         except:
             expression = None
@@ -82,11 +83,11 @@ class ASTBuilder(CVisitor):
                 pass
             return Variable.VarDeclInitialize(ctx.start.line, ctx.start.column, name, expression)
 
-    # Visit a parse tree produced by CParser#arrayInitialize.
-    def visitArrayInitialize(self, ctx:CParser.ArrayInitializeContext):
+    # Visit a parse tree produced by CParser#arrayInitializeList.
+    def visitArrayInitializeList(self, ctx:CParser.ArrayInitializeListContext):
         initializeList = []
         try:
-            initializeList += self.visitArrayInitialize(ctx.arrayInitialize())
+            initializeList += self.visitArrayInitializeList(ctx.arrayInitializeList())
             initializeList.append(self.visitSimpleExpression(ctx.simpleExpression()))
         except:
             pass

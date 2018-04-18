@@ -1,6 +1,7 @@
 
 from ASTListener import ASTListener
 from SymbolTable.SymbolTable import *
+from AST import Expression, Function, Literals, Program, Statement, Variable
 
 
 class SemanticValidator(ASTListener):
@@ -27,7 +28,10 @@ class SemanticValidator(ASTListener):
             # Check if new var already exists in current scope
             symbolInfo = self.symbolTable.getSymbolInCurrentScope(varDeclInit.name)
             if symbolInfo is None:
-                self.symbolTable.addSymbol(varDeclInit.name, VarInfo(node.type))
+                if type(node) is Variable.VarDeclInitialize:
+                    self.symbolTable.addSymbol(varDeclInit.name, VarInfo(node.type))
+                else:
+                    self.symbolTable.addSymbol(varDeclInit.name, ArrayInfo(node.type, varDeclInit.size))
             else:
                 self.errors.append(varDeclInit.getPosition() + ": Redefinition of '" + varDeclInit.name + "'")
 
@@ -51,6 +55,11 @@ class SemanticValidator(ASTListener):
         symbolInfo = self.symbolTable.getSymbol(node.mutable.name)
         if symbolInfo is None or type(symbolInfo) is not ArrayInfo:
             self.errors.append(node.getPosition() + ": Subscripted value '" + node.mutable.name + "' is not an array")
+        else:
+            # TODO Check if in bounds
+            index = 0
+            if index > 0 and 0 < symbolInfo.size:
+                pass
 
     def enterFunctionDecl(self, node):
         # Check if new function already exists
