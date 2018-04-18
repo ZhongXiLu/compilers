@@ -64,12 +64,17 @@ class ASTBuilder(CVisitor):
     # Visit a parse tree produced by CParser#varDeclInitialize.
     def visitVarDeclInitialize(self, ctx:CParser.VarDeclInitializeContext):
         name = ctx.Id().getText()
-        expression = None
+        # Check if it's an array initialization
         try:
-            expression = self.visitSimpleExpression(ctx.simpleExpression())
+            size = ctx.IntConst().getText()
+            return Variable.ArrayInitialize(ctx.start.line, ctx.start.column, name, size)
         except:
-            pass
-        return Variable.VarDeclInitialize(ctx.start.line, ctx.start.column, name, expression)
+            expression = None
+            try:
+                expression = self.visitSimpleExpression(ctx.simpleExpression())
+            except:
+                pass
+            return Variable.VarDeclInitialize(ctx.start.line, ctx.start.column, name, expression)
 
     # Visit a parse tree produced by CParser#typeSpecifier.
     def visitTypeSpecifier(self, ctx:CParser.TypeSpecifierContext):
@@ -307,7 +312,11 @@ class ASTBuilder(CVisitor):
     # Visit a parse tree produced by CParser#constant.
     def visitConstant(self, ctx:CParser.ConstantContext):
         try:
-            return Literals.Number(ctx.start.line, ctx.start.column, ctx.NumConst().getText())
+            return Literals.Int(ctx.start.line, ctx.start.column, ctx.IntConst().getText())
+        except:
+            pass
+        try:
+            return Literals.Double(ctx.start.line, ctx.start.column, ctx.DoubleConst().getText())
         except:
             pass
         return Literals.String(ctx.start.line, ctx.start.column, ctx.CharConst().getText())

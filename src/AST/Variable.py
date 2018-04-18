@@ -52,3 +52,18 @@ class VarDeclInitialize(ASTNode):
         if self.expression != None:
             self.expression.accept(listener)
         listener.exitVarDeclInitialize(self)
+
+
+class ArrayInitialize(ASTNode):
+
+    def __init__(self, lineNr, positionNr, name, size):
+        super().__init__(lineNr, positionNr)
+        self.name = name    # string
+        self.size = size    # int
+
+    def visit(self, visitorObject):
+        return visitorObject("ArrayInitialize", [self.name, self.size])
+
+    def accept(self, listener):
+        listener.enterArrayInitialize(self)
+        listener.exitArrayInitialize(self)

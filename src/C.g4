@@ -49,6 +49,7 @@ varDeclList
 varDeclInitialize
 	: Id
 	| Id '=' simpleExpression
+	| Id '[' IntConst ']'
 	;
 
 typeSpecifier
@@ -246,7 +247,8 @@ args
 constant
 	: 'true'
 	| 'false'
-	| NumConst
+	| IntConst
+	| DoubleConst
 	| CharConst
 	;
 
@@ -263,7 +265,8 @@ fragment Digit: [0-9];
 fragment LetDig: Digit | NonDigit;
 
 Id: NonDigit LetDig*;
-NumConst: Digit+ | (Digit* '.' Digit+) | (Digit+ '.' Digit*);   // TODO: support more (e.g. 1e10)?
+IntConst: Digit+;
+DoubleConst: (Digit* '.' Digit+) | (Digit+ '.' Digit*);   // TODO: support more (e.g. 1e10)?
 CharConst: '"' ~('\r' | '\n' | '"')* '"';	//  '~' negates charsets
 Library: (Id | Id '.' Id);
 

@@ -86,10 +86,16 @@ class ASTListener:
     def exitParameter(self, node):
         pass
 
-    def enterNumber(self, node):
+    def enterInt(self, node):
         pass
 
-    def exitNumber(self, node):
+    def exitInt(self, node):
+        pass
+
+    def enterDouble(self, node):
+        pass
+
+    def exitDouble(self, node):
         pass
 
     def enterString(self, node):
@@ -150,4 +156,10 @@ class ASTListener:
         pass
 
     def exitVarDeclInitialize(self, node):
+        pass
+
+    def enterArrayInitialize(self, node):
+        pass
+
+    def exitArrayInitialize(self, node):
         pass

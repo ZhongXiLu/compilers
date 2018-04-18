@@ -2,18 +2,32 @@
 from AST.ASTNode import ASTNode
 
 
-class Number(ASTNode):
+class Int(ASTNode):
 
-    def __init__(self, lineNr, positionNr, number):
+    def __init__(self, lineNr, positionNr, _int):
         super().__init__(lineNr, positionNr)
-        self.number = number
+        self._int = _int
 
     def visit(self, visitorObject):
-        return visitorObject(self.number, [])
+        return visitorObject(self._int, [])
 
     def accept(self, listener):
-        listener.enterNumber(self)
-        listener.exitNumber(self)
+        listener.enterInt(self)
+        listener.exitInt(self)
+
+
+class Double(ASTNode):
+
+    def __init__(self, lineNr, positionNr, double):
+        super().__init__(lineNr, positionNr)
+        self.double = double
+
+    def visit(self, visitorObject):
+        return visitorObject(self.double, [])
+
+    def accept(self, listener):
+        listener.enterDouble(self)
+        listener.exitDouble(self)
 
 
 class String(ASTNode):
