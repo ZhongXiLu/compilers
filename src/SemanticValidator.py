@@ -37,10 +37,20 @@ class SemanticValidator(ASTListener):
             if node.funcName != "printf" and node.funcName != "scanf":
                 self.errors.append(node.getPosition() + ": Undefined reference to '" + node.funcName + "'")
 
+        else:
+            # TODO: Check if params match the function declaration
+            for arg in node.args:
+                pass
+
     def enterMutable(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.name)
         if symbolInfo is None or (type(symbolInfo) is not VarInfo and type(symbolInfo) is not ArrayInfo):
             self.errors.append(node.getPosition() + ": Undefined reference to '" + node.name + "'")
+
+    def enterSubScript(self, node):
+        symbolInfo = self.symbolTable.getSymbol(node.mutable.name)
+        if symbolInfo is None or type(symbolInfo) is not ArrayInfo:
+            self.errors.append(node.getPosition() + ": Subscripted value '" + node.mutable.name + "' is not an array")
 
     def enterFunctionDecl(self, node):
         # Check if new function already exists
