@@ -8,10 +8,9 @@ from ASTBuilder import ASTBuilder
 from DotGenerators.DotGraphBuilder import DotGraphBuilder
 from SemanticValidator import SemanticValidator
 
-
 def main(argv):
-    inputFile = FileStream(argv[1])
-    
+    #inputFile = FileStream(argv[1])
+    inputFile = FileStream("examples/example3.c")
     lexer = CLexer(inputFile)
     stream = CommonTokenStream(lexer)
     parser = CParser(stream)
