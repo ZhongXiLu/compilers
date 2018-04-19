@@ -37,5 +37,6 @@ def main(argv):
     for error in semanticValidator.errors:
         print("ERROR: " + error)
 
+
 if __name__ == '__main__':
     main(sys.argv)

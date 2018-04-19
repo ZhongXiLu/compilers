@@ -1,4 +1,5 @@
 import sys
+import os
 sys.path.append("..")
 
 import unittest
@@ -12,7 +13,7 @@ from SemanticValidator import SemanticValidator
 class SyntaxErrorTestCase(unittest.TestCase):
 
     def semanticAnalyse(self, file):
-        lexer = CLexer(FileStream(file))
+        lexer = CLexer(FileStream(os.path.dirname(os.path.abspath(__file__)) + "/" + file))
         stream = CommonTokenStream(lexer)
         parser = CParser(stream)
         tree = parser.prog()
