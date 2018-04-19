@@ -28,10 +28,14 @@ class SemanticValidator(ASTListener):
             # Check if new var already exists in current scope
             symbolInfo = self.symbolTable.getSymbolInCurrentScope(varDeclInit.name)
             if symbolInfo is None:
-                if type(node) is Variable.VarDeclInitialize:
-                    self.symbolTable.addSymbol(varDeclInit.name, VarInfo(node.type))
-                else:
+                if hasattr(varDeclInit, 'size'):
                     self.symbolTable.addSymbol(varDeclInit.name, ArrayInfo(node.type, varDeclInit.size))
+                else:
+                    self.symbolTable.addSymbol(varDeclInit.name, VarInfo(node.type))
+                # if type(node) is Variable.VarDeclInitialize:
+                #    self.symbolTable.addSymbol(varDeclInit.name, VarInfo(node.type))
+                # else:
+                #    self.symbolTable.addSymbol(varDeclInit.name, ArrayInfo(node.type, varDeclInit.size))
             else:
                 self.errors.append(varDeclInit.getPosition() + ": Redefinition of '" + varDeclInit.name + "'")
 
@@ -79,3 +83,15 @@ class SemanticValidator(ASTListener):
 
     def exitFunctionDecl(self, node):
         self.symbolTable.endScope()
+
+    def enterAssign(self, node):
+        print("enterAssign")
+        if (hasattr(node, "right")):
+            getType(node.right)
+
+def getType(node):
+    if(hasattr(node,"left")):
+        print(node.right._int)
+        getType(node.left)
+    else:
+        print(node._int)
