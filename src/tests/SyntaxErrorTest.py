@@ -1,4 +1,5 @@
 import sys
+import os
 sys.path.append("..")
 
 import unittest
@@ -10,7 +11,7 @@ from CParser import CParser
 class SyntaxErrorTestCase(unittest.TestCase):
 
     def parse(self, file):
-        lexer = CLexer(FileStream(file))
+        lexer = CLexer(FileStream(os.path.dirname(os.path.abspath(__file__)) + "/" + file))
         stream = CommonTokenStream(lexer)
         parser = CParser(stream)
         parser.prog()

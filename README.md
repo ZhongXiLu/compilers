@@ -5,16 +5,27 @@
 - Zhong-Xi Lu
 - Jordan Parezys
 
-### Install pip3 requirements
+### Progress (as of 22/04)
 
-```bash
-sudo pip3 install -r requirements.txt
-```
+- TODO
 
-### Build and Run
+### Test Files
 
-```bash
-cd src/
-java -jar antlr-4.7.1-complete.jar -Dlanguage=Python3 C.g4 -visitor
-python main.py <C_FILE>
-```
+- Semantic Errors (`src/tests/data/SemanticErrors`):
+    - Undefined References:
+        - `NestedScope.c`
+        - `UndefinedRefToFunc`
+        - `UndefinedRefToVar`
+    - Redefinitions:
+        - `RedefinitionFunc.c`
+        - `RedefinitionVar.c`
+    - Calling subscript on not an array
+        - `SubscriptNotArray.c`
+        
+- Syntax Errors (`src/tests/data/SyntaxErrors`)
+    - Missing symbols
+        - `MissingBracket.c`
+        - `MissingSemiColon.c`
+    - Wrong constructions
+        - `WrongIfConstruction.c`
+        - `WrongKeyword.c`
