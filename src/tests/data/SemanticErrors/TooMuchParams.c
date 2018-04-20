@@ -1,8 +1,10 @@
 
 #include <stdio.h>
 
+void f(int a) {}
+
 int main()
 {
-	int a = 1 + "1";    // ERROR
+    f(1, 2, 3); // ERROR
 	return 0;
 }

@@ -1,8 +1,10 @@
 
 #include <stdio.h>
 
+char f() {}
+
 int main()
 {
-	int a = 1 + "1";    // ERROR
+	int a = f();    // ERROR
 	return 0;
 }

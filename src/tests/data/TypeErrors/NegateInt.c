@@ -3,6 +3,6 @@
 
 int main()
 {
-	int a = 1 + "1";    // ERROR
+	if (!10) {}     // ERROR
 	return 0;
 }

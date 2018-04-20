@@ -50,6 +50,10 @@ class SemanticErrorTestCase(unittest.TestCase):
         errors = self.semanticAnalyse("data/SemanticErrors/SubscriptNotArray.c")
         self.assertEqual(errors[0], "Line 7 at 5: Subscripted value 'a' is not an array")
 
+    def test_tooMuchParams(self):
+        errors = self.semanticAnalyse("data/SemanticErrors/TooMuchParams.c")
+        self.assertEqual(errors[0], "Line 8 at 5: Wrong amount of parameters! Expected: 1 found 3")
+
 
 if __name__ == '__main__':
     unittest.main()
