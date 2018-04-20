@@ -10,7 +10,7 @@ from ASTBuilder import ASTBuilder
 from SemanticValidator import SemanticValidator
 
 
-class SyntaxErrorTestCase(unittest.TestCase):
+class SemanticErrorTestCase(unittest.TestCase):
 
     def semanticAnalyse(self, file):
         lexer = CLexer(FileStream(os.path.dirname(os.path.abspath(__file__)) + "/" + file))
@@ -49,8 +49,6 @@ class SyntaxErrorTestCase(unittest.TestCase):
     def test_subscriptNotArray(self):
         errors = self.semanticAnalyse("data/SemanticErrors/SubscriptNotArray.c")
         self.assertEqual(errors[0], "Line 7 at 5: Subscripted value 'a' is not an array")
-
-
 
 
 if __name__ == '__main__':

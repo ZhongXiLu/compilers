@@ -3,6 +3,6 @@
 
 int main()
 {
-	char* a = 1;
+	int a = "a";    // ERROR
 	return 0;
 }

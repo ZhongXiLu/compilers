@@ -27,7 +27,6 @@ class SemanticValidator(ASTListener):
             # Check if new var already exists in current scope
             symbolInfo = self.symbolTable.getSymbolInCurrentScope(varDeclInit.name)
             if symbolInfo is None:
-                print(type(varDeclInit))
                 if type(varDeclInit) is Variable.ArrayInitialize:
                     self.symbolTable.addSymbol(varDeclInit.name, ArrayInfo(node.type, varDeclInit.size))
                 else:
@@ -40,7 +39,7 @@ class SemanticValidator(ASTListener):
         if node.expression is not None:
             getTypeResult = getType(node.expression,symbolInfo.type, self.symbolTable)
             if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
-                self.errors.append(getTypeResult[1] + ": Type mismatch: expected \"" + symbolInfo.type + "\" but found \"" + getTypeResult[0] + "\".")
+                self.errors.append(getTypeResult[1] + ": Type mismatch: expected '" + symbolInfo.type + "' but found '" + getTypeResult[0] + "'")
 
     def enterCall(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.funcName)
@@ -52,7 +51,7 @@ class SemanticValidator(ASTListener):
                 for i in range (0, len(symbolInfo.paramTypes)):
                     foundParamType = getType(node.args[i], symbolInfo.paramTypes[i],self.symbolTable)[0]
                     if foundParamType != symbolInfo.paramTypes[i]:
-                        self.errors.append(node.getPosition() + ": Wrong parameter type! Expected: \"" + symbolInfo.paramTypes[i] + "\" found \"" + foundParamType + "\"")
+                        self.errors.append(node.getPosition() + ": Wrong parameter type! Expected: '" + symbolInfo.paramTypes[i] + "' found '" + foundParamType + "'")
             else:
                 self.errors.append(node.getPosition() + ": Wrong amount of parameters! Expected: " + str(len(symbolInfo.paramTypes)) + " found " + str(len(node.args)))
 
@@ -67,8 +66,8 @@ class SemanticValidator(ASTListener):
             self.errors.append(node.getPosition() + ": Subscripted value '" + node.mutable.name + "' is not an array")
         else:
             if int(symbolInfo.size) < int(node.index._int):
-                self.errors.append(node.index.getPosition() + ": Index out of range! Max index: \"" + str(
-                    int(symbolInfo.size) - 1) + "\" but found \"" + str(node.index._int) + "\".")
+                self.errors.append(node.index.getPosition() + ": Index out of range! Max index: '" + str(
+                    int(symbolInfo.size) - 1) + "' but found '" + str(node.index._int) + "'")
 
     def enterFunctionDecl(self, node):
         # Check if new function already exists
@@ -98,7 +97,7 @@ class SemanticValidator(ASTListener):
         if symbolInfo is not None:
             getTypeResult = getType(node.right, symbolInfo.type,self.symbolTable)
             if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
-                self.errors.append(getTypeResult[1] + ": Type mismatch: expected \"" + symbolInfo.type + "\" but found \"" + getTypeResult[0] + "\".")
+                self.errors.append(getTypeResult[1] + ": Type mismatch: expected '" + symbolInfo.type + "' but found '" + getTypeResult[0] + "'")
 
 
 def getType(expression,expectedType,symbolTable):
@@ -140,7 +139,7 @@ def getType(expression,expectedType,symbolTable):
         if assigneeType is not None:
             return [assigneeType.type, expression.getPosition()]
         else:
-            return ["undefined variable", expression.right.getPosition()]
+            return ["undefined variable", expression.getPosition()]
     elif type(expression) is Expression.Call:
         functionType = symbolTable.getSymbol(expression.funcName)
         if functionType is not None:
@@ -165,4 +164,4 @@ def getType(expression,expectedType,symbolTable):
             if expectedType == "char":
                 return [expectedType, expression.getPosition()]
             else:
-                return ["string", expression.lineNr.getPosition()]
+                return ["string", expression.getPosition()]
