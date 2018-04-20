@@ -165,3 +165,8 @@ def getType(expression,expectedType,symbolTable):
                 return [expectedType, expression.getPosition()]
             else:
                 return ["string", expression.getPosition()]
+        if type(expression) is Literals.Char:
+            if expectedType == "char":
+                return [expectedType, expression.getPosition()]
+            else:
+                return ["char", expression.getPosition()]
