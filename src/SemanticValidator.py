@@ -35,11 +35,11 @@ class SemanticValidator(ASTListener):
                 self.errors.append(varDeclInit.getPosition() + ": Redefinition of '" + varDeclInit.name + "'")
 
     def enterVarDeclInitialize(self, node):
-        symbolInfo=self.symbolTable.getSymbol(node.name)
+        symbolInfo = self.symbolTable.getSymbol(node.name)
         if node.expression is not None:
             getTypeResult = getType(node.expression,symbolInfo.type, self.symbolTable)
             if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
-                self.errors.append("Line "+ str(getTypeResult[1]) +" at "+ str(getTypeResult[2]) + ": Type mismatch: expected \"" + symbolInfo.type + "\" but found \"" + getTypeResult[0] + "\".")
+                self.errors.append(getTypeResult[1] + ": Type mismatch: expected \"" + symbolInfo.type + "\" but found \"" + getTypeResult[0] + "\".")
 
     def enterCall(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.funcName)
@@ -49,10 +49,11 @@ class SemanticValidator(ASTListener):
         else:
             if len(node.args) == len(symbolInfo.paramTypes):
                 for i in range (0, len(symbolInfo.paramTypes)):
-                    foundParamType = getType(node.args[i],symbolInfo.paramTypes[i],self.symbolTable)[0]
+                    foundParamType = getType(node.args[i], symbolInfo.paramTypes[i],self.symbolTable)[0]
                     if foundParamType != symbolInfo.paramTypes[i]:
-                        self.errors.append(node.getPosition() + ": Wrong parameter type! Expected: \"" + symbolInfo.paramTypes[i] + "\" found \""+foundParamType+"\"")
-            else:self.errors.append(node.getPosition() + ": Wrong amount of parameters! Expected: " + str(len(symbolInfo.paramTypes)) + " found " + str(len(node.args)))
+                        self.errors.append(node.getPosition() + ": Wrong parameter type! Expected: \"" + symbolInfo.paramTypes[i] + "\" found \"" + foundParamType + "\"")
+            else:
+                self.errors.append(node.getPosition() + ": Wrong amount of parameters! Expected: " + str(len(symbolInfo.paramTypes)) + " found " + str(len(node.args)))
 
     def enterMutable(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.name)
@@ -87,14 +88,17 @@ class SemanticValidator(ASTListener):
         symbolInfo = None
         if type(node.left) is Expression.SubScript:
             symbolInfo = self.symbolTable.getSymbol(node.left.mutable.name)
-            if int(symbolInfo.size) < int(node.left.index._int):
-                self.errors.append(node.left.index.getPosition() + ": Index out of range! Max index: \"" + str(int(symbolInfo.size)-1) + "\" but found \"" +str(node.left.index._int) + "\".")
-                return
         else:
             symbolInfo = self.symbolTable.getSymbol(node.left.name)
-            getTypeResult = getType(node.right,symbolInfo.type,self.symbolTable)
-            if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
-                self.errors.append(getTypeResult[1] + ": Type mismatch: expected \"" + symbolInfo.type + "\" but found \"" + getTypeResult[0] + "\".")
+        getTypeResult = getType(node.right, symbolInfo.type,self.symbolTable)
+        if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
+            self.errors.append(getTypeResult[1] + ": Type mismatch: expected \"" + symbolInfo.type + "\" but found \"" + getTypeResult[0] + "\".")
+
+    def enterSubScript(self, node):
+        symbolInfo = self.symbolTable.getSymbol(node.mutable.name)
+        if int(symbolInfo.size) < int(node.index._int):
+            self.errors.append(node.index.getPosition() + ": Index out of range! Max index: \"" + str(
+                int(symbolInfo.size) - 1) + "\" but found \"" + str(node.index._int) + "\".")
 
 
 def getType(expression,expectedType,symbolTable):
