@@ -27,7 +27,8 @@ class SemanticValidator(ASTListener):
             # Check if new var already exists in current scope
             symbolInfo = self.symbolTable.getSymbolInCurrentScope(varDeclInit.name)
             if symbolInfo is None:
-                if type(node) is Variable.ArrayInitialize:
+                print(type(varDeclInit))
+                if type(varDeclInit) is Variable.ArrayInitialize:
                     self.symbolTable.addSymbol(varDeclInit.name, ArrayInfo(node.type, varDeclInit.size))
                 else:
                     self.symbolTable.addSymbol(varDeclInit.name, VarInfo(node.type))
@@ -64,6 +65,10 @@ class SemanticValidator(ASTListener):
         symbolInfo = self.symbolTable.getSymbol(node.mutable.name)
         if symbolInfo is None or type(symbolInfo) is not ArrayInfo:
             self.errors.append(node.getPosition() + ": Subscripted value '" + node.mutable.name + "' is not an array")
+        else:
+            if int(symbolInfo.size) < int(node.index._int):
+                self.errors.append(node.index.getPosition() + ": Index out of range! Max index: \"" + str(
+                    int(symbolInfo.size) - 1) + "\" but found \"" + str(node.index._int) + "\".")
 
     def enterFunctionDecl(self, node):
         # Check if new function already exists
@@ -90,15 +95,10 @@ class SemanticValidator(ASTListener):
             symbolInfo = self.symbolTable.getSymbol(node.left.mutable.name)
         else:
             symbolInfo = self.symbolTable.getSymbol(node.left.name)
-        getTypeResult = getType(node.right, symbolInfo.type,self.symbolTable)
-        if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
-            self.errors.append(getTypeResult[1] + ": Type mismatch: expected \"" + symbolInfo.type + "\" but found \"" + getTypeResult[0] + "\".")
-
-    def enterSubScript(self, node):
-        symbolInfo = self.symbolTable.getSymbol(node.mutable.name)
-        if int(symbolInfo.size) < int(node.index._int):
-            self.errors.append(node.index.getPosition() + ": Index out of range! Max index: \"" + str(
-                int(symbolInfo.size) - 1) + "\" but found \"" + str(node.index._int) + "\".")
+        if symbolInfo is not None:
+            getTypeResult = getType(node.right, symbolInfo.type,self.symbolTable)
+            if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
+                self.errors.append(getTypeResult[1] + ": Type mismatch: expected \"" + symbolInfo.type + "\" but found \"" + getTypeResult[0] + "\".")
 
 
 def getType(expression,expectedType,symbolTable):

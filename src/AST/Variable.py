@@ -22,7 +22,7 @@ class VarDeclList(ASTNode):
 
     def __init__(self, lineNr, positionNr, declInitializeList):
         super().__init__(lineNr, positionNr)
-        self.declInitializeList = declInitializeList    # list of VarDeclInitialize/Array nodes
+        self.declInitializeList = declInitializeList    # list of VarDeclInitialize/ArrayInitialize nodes
 
     def visit(self, visitorObject):
         return visitorObject("VarDeclList", [declInit.visit(visitorObject) for declInit in self.declInitializeList])
