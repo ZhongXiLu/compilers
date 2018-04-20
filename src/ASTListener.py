@@ -104,6 +104,12 @@ class ASTListener:
     def exitString(self, node):
         pass
 
+    def enterChar(self, node):
+        pass
+
+    def exitChar(self, node):
+        pass
+
     def enterCompound(self, node):
         pass
 

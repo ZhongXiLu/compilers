@@ -42,3 +42,17 @@ class String(ASTNode):
     def accept(self, listener):
         listener.enterString(self)
         listener.exitString(self)
+
+
+class Char(ASTNode):
+
+    def __init__(self, lineNr, positionNr, char):
+        super().__init__(lineNr, positionNr)
+        self.char = char
+
+    def visit(self, visitorObject):
+        return visitorObject(self.char, [])
+
+    def accept(self, listener):
+        listener.enterChar(self)
+        listener.exitChar(self)

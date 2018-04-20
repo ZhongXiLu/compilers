@@ -255,6 +255,7 @@ constant
 	| 'false'
 	| IntConst
 	| DoubleConst
+	| StringConst
 	| CharConst
 	;
 
@@ -273,7 +274,8 @@ fragment LetDig: Digit | NonDigit;
 Id: NonDigit LetDig*;
 IntConst: Digit+;
 DoubleConst: (Digit* '.' Digit+) | (Digit+ '.' Digit*);   // TODO: support more (e.g. 1e10)?
-CharConst: '"' ~('\r' | '\n' | '"')* '"';	//  '~' negates charsets
+StringConst: '"' ~('\r' | '\n' | '"')* '"';	//  '~' negates charsets
+CharConst: '\'' ~('\r' | '\n' | '"') '\'';
 Library: (Id | Id '.' Id);
 
 // ===============================================

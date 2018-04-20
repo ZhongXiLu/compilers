@@ -336,4 +336,8 @@ class ASTBuilder(CVisitor):
             return Literals.Double(ctx.start.line, ctx.start.column, ctx.DoubleConst().getText())
         except:
             pass
-        return Literals.String(ctx.start.line, ctx.start.column, ctx.CharConst().getText())
+        try:
+            return Literals.String(ctx.start.line, ctx.start.column, ctx.StringConst().getText())
+        except:
+            pass
+        return Literals.Char(ctx.start.line, ctx.start.column, ctx.CharConst().getText())
