@@ -101,40 +101,92 @@ class SemanticValidator(ASTListener):
             getTypeResult = getType(node.right, symbolInfo.type,self.symbolTable)
             if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
                 self.errors.append(getTypeResult[1] + ": Type mismatch: expected '" + symbolInfo.type + "' but found '" + getTypeResult[0] + "'")
+
     def enterBinOp(self, node):
         foundMismatch=False
         if type(node.left) is not Expression.BinOp:
             leftType = getType(node.left,"",self.symbolTable)[0]
         else:
            leftTypeResult = checkBinOp(node.left,self.symbolTable)
-           if(leftTypeResult[0]==leftTypeResult[1]):
-               leftType=leftTypeResult[0]
+
+           if (leftTypeResult[0] == "string" or leftTypeResult[0] == "char"):
+               if (leftTypeResult[1] == "string" or leftTypeResult[1] == "char"):
+                   leftType = leftTypeResult[0]
+               else:
+                   foundMismatch = True
+                   if "Line " + str(leftTypeResult[2].lineNr) + " position " + str(
+                           leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[
+                       0] + "\" with \"" + leftTypeResult[1] + "\"" not in self.errors:
+                       self.errors.append("Line " + str(leftTypeResult[2].lineNr) + " position " + str(
+                           leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[
+                                              0] + "\" with \"" + leftTypeResult[1] + "\"")
+
            else:
-               foundMismatch = True
-               if "Line " + str(leftTypeResult[2].lineNr) + " position " + str(leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[0] + "\" with \"" +leftTypeResult[1] + "\"" not in self.errors:
-                    self.errors.append("Line " + str(leftTypeResult[2].lineNr) + " position " + str(leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[0] + "\" with \"" +leftTypeResult[1] + "\"")
+               if (leftTypeResult[1] == "string" or leftTypeResult[1] == "char"):
+                   foundMismatch = True
+                   if "Line " + str(leftTypeResult[2].lineNr) + " position " + str(
+                           leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[
+                       0] + "\" with \"" + leftTypeResult[1] + "\"" not in self.errors:
+                       self.errors.append("Line " + str(leftTypeResult[2].lineNr) + " position " + str(
+                           leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[
+                                              0] + "\" with \"" + leftTypeResult[1] + "\"")
+
+               else:
+                   leftType = leftTypeResult[0]
         if type(node.right)is not Expression.BinOp:
             rightType = getType(node.right,"",self.symbolTable)[0]
         else:
             rightTypeResult = checkBinOp(node.right,self.symbolTable)
-            if (rightTypeResult[0] == rightTypeResult[1]):
-                rightType = rightTypeResult[0]
+            if (rightTypeResult[0] == "string" or rightTypeResult[0] == "char"):
+                if (rightTypeResult[1] == "string" or rightTypeResult[1] == "char"):
+                    rightType = rightTypeResult[0]
+                else:
+                    foundMismatch = True
+                    if "Line " + str(rightTypeResult[2].lineNr) + " position " + str(
+                            rightTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + rightTypeResult[
+                        0] + "\" with \"" + rightTypeResult[1] + "\"" not in self.errors:
+                        self.errors.append("Line " + str(rightTypeResult[2].lineNr) + " position " + str(
+                            rightTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + rightTypeResult[
+                                               0] + "\" with \"" + rightTypeResult[1] + "\"")
+
             else:
-                foundMismatch = True
-                if "Line " + str(rightTypeResult[2].lineNr )+ " position " + str(rightTypeResult[2].positionNr)+": type mismatch! Cannot compare \"" + rightTypeResult[0] + "\" with \""+rightTypeResult[1]+"\"" not in self.errors:
-                    self.errors.append("Line " + str(rightTypeResult[2].lineNr )+ " position " + str(rightTypeResult[2].positionNr)+": type mismatch! Cannot compare \"" + rightTypeResult[0] + "\" with \""+rightTypeResult[1]+"\"")
+                if (rightTypeResult[1] == "string" or rightTypeResult[1] == "char"):
+                    foundMismatch = True
+                    if "Line " + str(rightTypeResult[2].lineNr) + " position " + str(
+                            rightTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + rightTypeResult[
+                        0] + "\" with \"" + rightTypeResult[1] + "\"" not in self.errors:
+                        self.errors.append("Line " + str(rightTypeResult[2].lineNr) + " position " + str(
+                            rightTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + rightTypeResult[
+                                               0] + "\" with \"" + rightTypeResult[1] + "\"")
+
+                else:
+                    rightType = rightTypeResult[0]
+
         if not foundMismatch:
-            if(leftType!=rightType):
-                if "Line " + str(node.lineNr) + " position " + str(node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" +rightType+ "\"" not in self.errors:
-                    self.errors.append("Line " + str(node.lineNr) + " position " + str(node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" +rightType+ "\"")
+            if(leftType == "string" or leftType == "char"):
+                if(rightType!="string" and rightType!="char"):
+                    if "Line " + str(node.lineNr) + " position " + str( node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" + rightType + "\"" not in self.errors:
+                        self.errors.append("Line " + str(node.lineNr) + " position " + str( node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" + rightType + "\"")
+            else:
+                if(rightType=="string" or rightType=="char"):
+                    if "Line " + str(node.lineNr) + " position " + str(node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" +rightType+ "\"" not in self.errors:
+                        self.errors.append("Line " + str(node.lineNr) + " position " + str(node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" +rightType+ "\"")
 
 def getType(expression,expectedType,symbolTable):
     if type(expression) is Expression.BinOp:
         assignee = "assignee"
+        if type(expression.right) is Expression.BinOp:
+            if expression.right.operator.value == "<" or expression.right.operator.value == ">" or expression.right.operator.value == "==":
+                return ["int", expression.right.getPosition()]
+            else:
+                childResult = checkBinOp(expression.right, symbolTable)
+                return [childResult[1], "Line " + str(childResult[2].lineNr) + " position " + str(childResult[2].positionNr)]
         if type(expression.right) is Expression.Mutable:
             assignee = symbolTable.getSymbol(expression.right.name)
         if type(expression.right) is Expression.Call:
             assignee = symbolTable.getSymbol(expression.right.funcName)
+        if type(expression.right) is Expression.SubScript:
+            assignee = symbolTable.getSymbol(expression.right.mutable.name)
         if assignee is not None:    # Opmerking: is toch altijd "not None"?
             assigneeType = "AType"
             if hasattr(assignee, "type"):
@@ -158,68 +210,105 @@ def getType(expression,expectedType,symbolTable):
                     return getType(expression.left, expectedType, symbolTable)
                 else:
                     return ["string", expression.right.getPosition()]
+
         else:
             return ["undefined input", expression.right.getPosition()]
 
-    elif type(expression) is Expression.Mutable:
-        assigneeType = symbolTable.getSymbol(expression.name)
-        if assigneeType is not None:
-            return [assigneeType.type, expression.getPosition()]
+    foundType = None
+    if type(expression) is Expression.Mutable:
+        found = symbolTable.getSymbol(expression.name)
+        if found is not None:
+            foundType = found.type
+        else:
+            foundType = "undefined input"
+    if type(expression) is Expression.Call:
+        found = symbolTable.getSymbol(expression.funcName)
+        if found is not None:
+            foundType = found.returnType
+        else:
+            foundType = "undefined input"
+    if type(expression) is Expression.SubScript:
+        found = symbolTable.getSymbol(expression.mutable.name)
+        if found is not None:
+            foundType = found.type
+        else:
+            foundType = "undefined input"
+
+    if foundType is not None:
+        if foundType!="undefined input":
+            if foundType == "short" or foundType == "int" or foundType == "signed" or foundType == "unsigned":
+                if expectedType == "short" or expectedType == "int" or expectedType == "signed" or expectedType == "unsigned" or expectedType == "float" or expectedType == "double":
+                    return [expectedType,expression.getPosition()]
+                else:
+                    return [foundType, expression.getPosition()]
+            if foundType == "double" or foundType == "float":
+                if expectedType == "float" or expectedType == "double":
+                    return [expectedType, expression.getPosition()]
+                else:
+                    return [foundType, expression.getPosition()]
+            if foundType == "string":
+                if expectedType == "char" or expectedType=="string":
+                    return [expectedType, expression.getPosition()]
+                else:
+                    return [foundType, expression.getPosition()]
+            if foundType =="char":
+                if expectedType == "char":
+                    return [expectedType, expression.getPosition()]
+                else:
+                    return [foundType, expression.getPosition()]
         else:
             return ["undefined input", expression.getPosition()]
-    elif type(expression) is Expression.Call:
-        functionType = symbolTable.getSymbol(expression.funcName)
-        if functionType is not None:
-            return [functionType.returnType, expression.getPosition()]
+
+    # Literals
+    if type(expression) is Literals.Int:
+        if expectedType == "short" or expectedType == "int" or expectedType == "signed" or expectedType == "unsigned"\
+                or expectedType == "float" or expectedType == "double":
+            return [expectedType, expression.getPosition()]
         else:
-            return ["undefined input", expression.getPosition()]
-    elif type(expression) is Expression.SubScript:
-        arrayType = symbolTable.getSymbol(expression.mutable.name)
-        if arrayType is not None:
-            return [arrayType.type,expression.getPosition()]
+            return ["int", expression.getPosition()]
+    if type(expression) is Literals.Double:
+        if expectedType == "float" or expectedType == "double":
+            return [expectedType, expression.getPosition()]
         else:
-            return ["undefined input", expression.getPosition()]
-    else:
-        # Literals
-        if type(expression) is Literals.Int:
-            if expectedType == "short" or expectedType == "int" or expectedType == "signed" or expectedType == "unsigned"\
-                    or expectedType == "float" or expectedType == "double":
-                return [expectedType, expression.getPosition()]
-            else:
-                return ["int", expression.getPosition()]
-        if type(expression) is Literals.Double:
-            if expectedType == "float" or expectedType == "double":
-                return [expectedType, expression.getPosition()]
-            else:
-                return ["double", expression.getPosition()]
-        if type(expression) is Literals.String:
-            if expectedType == "char":
-                return [expectedType, expression.getPosition()]
-            else:
-                return ["string", expression.getPosition()]
-        if type(expression) is Literals.Char:
-            if expectedType == "char":
-                return [expectedType, expression.getPosition()]
-            else:
-                return ["char", expression.getPosition()]
+            return ["double", expression.getPosition()]
+    if type(expression) is Literals.String:
+        if expectedType == "char":
+            return [expectedType, expression.getPosition()]
+        else:
+            return ["string", expression.getPosition()]
+    if type(expression) is Literals.Char:
+        if expectedType == "char":
+            return [expectedType, expression.getPosition()]
+        else:
+            return ["char", expression.getPosition()]
 
 def checkBinOp(expression,symbolTable):
     if type(expression.left) is not Expression.BinOp:
         leftType = getType(expression.left, "", symbolTable)[0]
     else:
         leftTypeResult = checkBinOp(expression.left, symbolTable)
-        if (leftTypeResult[0] == leftTypeResult[1]):
-            leftType = leftTypeResult[0]
+        if (leftTypeResult[0] == "string" or leftTypeResult[0] == "char"):
+            if (leftTypeResult[1] == "string" or leftTypeResult[1] == "char"):
+                leftType = leftTypeResult[0]
+            else:
+                return [leftTypeResult[0], leftTypeResult[1], leftTypeResult[2]]
         else:
-            return [leftTypeResult[0],leftTypeResult[1],leftTypeResult[2]]
-
+            if (leftTypeResult[1] == "string" or leftTypeResult[1] == "char"):
+                return [leftTypeResult[0], leftTypeResult[1], leftTypeResult[2]]
+            else:
+                leftType = leftTypeResult[0]
     if type(expression.right) is not Expression.BinOp:
         rightType = getType(expression.right, "", symbolTable)[0]
     else:
         rightTypeResult = checkBinOp(expression.right, symbolTable)
-        if (rightTypeResult[0] == rightTypeResult[1]):
-            rightType = rightTypeResult[0]
+        if (rightTypeResult[0] == "string" or rightTypeResult[0] == "char"):
+            if (rightTypeResult[1] == "string" or rightTypeResult[1] == "char"):
+                rightType = rightTypeResult[0]
+            else:
+                return [rightTypeResult[0], rightTypeResult[1], rightTypeResult[2]]
         else:
-            return [rightTypeResult[0],rightTypeResult[1],rightTypeResult[2]]
-
+            if (rightTypeResult[1] == "string" or rightTypeResult[1] == "char"):
+                return [rightTypeResult[0], rightTypeResult[1], rightTypeResult[2]]
+            else:
+                rightType = rightTypeResult[0]
     return[leftType,rightType,expression]
