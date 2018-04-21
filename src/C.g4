@@ -145,7 +145,6 @@ iterationStmt
 returnStmt
 	: 'return' ';'
 	| 'return' expression ';'
-	//| 'return' '0' ';'
 	;
 
 breakStmt
@@ -154,7 +153,6 @@ breakStmt
 
 // ===============================================
 // Expression Rules
-// TODO: make rules shorter?
 // ===============================================
 
 // TODO: support '+=', '++', '&&', '%', ...
@@ -249,11 +247,8 @@ args
 	| // empty
 	;
 
-// TODO: 'true'/'false' correct C ?
 constant
-	: 'true'
-	| 'false'
-	| IntConst
+	:  IntConst
 	| DoubleConst
 	| StringConst
 	| CharConst
@@ -261,7 +256,6 @@ constant
 
 // ===============================================
 // Tokens
-// TODO: replace '...' with tokens (e.g. ';' => 'SEMICOLON: ';';') ?
 // ===============================================
 
 // 'fragment': "You can also define rules that are not tokens but rather aid in the recognition of tokens.
