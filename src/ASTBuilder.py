@@ -310,6 +310,18 @@ class ASTBuilder(CVisitor):
         expression = self.visitExpression(ctx.expression())
         return Expression.SubScript(ctx.start.line, ctx.start.column, mutable, expression)
 
+    # Visit a parse tree produced by CParser#immutable.
+    def visitImmutable(self, ctx:CParser.ImmutableContext):
+        try:
+            return self.visitExpression(ctx.expression())
+        except:
+            pass
+        try:
+            return self.visitCall(ctx.call())
+        except:
+            pass
+        return self.visitConstant(ctx.constant())
+
     # Visit a parse tree produced by CParser#call.
     def visitCall(self, ctx:CParser.CallContext):
         funcName = ctx.Id().getText()

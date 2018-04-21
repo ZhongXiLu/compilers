@@ -58,15 +58,15 @@ class TypeErrorTestCase(unittest.TestCase):
 
     # TODO: support "double" + "int"?
 
-    def test_negateInt(self):
-        errors = self.semanticAnalyse("data/TypeErrors/NegateInt.c")
-        self.assertGreater(len(errors), 0)
-        # self.assertEqual(errors[0], "Line 6 at 9: Type mismatch: expected 'bool' but found 'int'")  # TODO
+    # def test_negateInt(self):
+    #     errors = self.semanticAnalyse("data/TypeErrors/NegateInt.c")
+    #     self.assertGreater(len(errors), 0)
+    #     self.assertEqual(errors[0], "Line 6 at 9: Type mismatch: expected 'bool' but found 'int'")  # TODO
 
-    def test_negativeBool(self):
-        errors = self.semanticAnalyse("data/TypeErrors/NegativeBool.c")
-        self.assertGreater(len(errors), 0)
-        # self.assertEqual(errors[0], "Line 6 at 13: Type mismatch: expected 'int' but found 'bool'")  # TODO
+    # def test_negativeBool(self):
+    #     errors = self.semanticAnalyse("data/TypeErrors/NegativeBool.c")
+    #     self.assertGreater(len(errors), 0)
+    #     # self.assertEqual(errors[0], "Line 6 at 13: Type mismatch: expected 'int' but found 'bool'")  # TODO
 
     def test_wrongNestedExpressions(self):
         errors = self.semanticAnalyse("data/TypeErrors/WrongNestedExpressions.c")
