@@ -10,7 +10,7 @@ from ASTBuilder import ASTBuilder
 from SemanticValidator import SemanticValidator
 
 
-class TypeErrorTestCase(unittest.TestCase):
+class CorrectTypeTestCase(unittest.TestCase):
 
     def semanticAnalyse(self, file):
         lexer = CLexer(FileStream(os.path.dirname(os.path.abspath(__file__)) + "/" + file))

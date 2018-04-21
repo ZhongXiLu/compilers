@@ -30,6 +30,10 @@ class CorrectSemanticTestCase(unittest.TestCase):
         errors = self.semanticAnalyse("data/CorrectSemantic/CorrectSemantic1.c")
         self.assertEqual(len(errors), 0)
 
+    def test_stdLib(self):
+        errors = self.semanticAnalyse("data/CorrectSemantic/StdLib.c")
+        self.assertEqual(len(errors), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

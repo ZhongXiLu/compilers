@@ -44,7 +44,10 @@ class SemanticValidator(ASTListener):
     def enterCall(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.funcName)
         if symbolInfo is None or type(symbolInfo) is not FunctionInfo:
-            if node.funcName != "printf" and node.funcName != "scanf":
+            if node.funcName == "printf" and node.funcName == "scanf":
+                # TODO
+                pass
+            else:
                 self.errors.append(node.getPosition() + ": Undefined reference to '" + node.funcName + "'")
         else:
             if len(node.args) == len(symbolInfo.paramTypes):
