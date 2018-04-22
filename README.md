@@ -1,3 +1,4 @@
+
 # Compilers
 
 ###  Contributors
@@ -7,12 +8,37 @@
 
 ### Progress (as of 22/04)
 
-- TODO
+#### Implemented features
+- Basic grammar completed
+- Reporting lexical errors
+- Reporting syntactical errors
+- Constructing and visualising AST
+    - AST Classes/Nodes in use
+- Reporting semantical errors (roughly done)
+    - Symbol table in use
+    
+#### Optional features
+- Break statement
+- Comparison operators >=, <=, and !=
+- Logical operators &&, ||
+- Some type conversions
+    - Double to int
+    - *bool* to int
 
 ### How to test and build
 
-- TODO
+How to build:
+```commandline
+python3 build.py
+python3 src/main.cpp c_prog
+```
+Note that during the execution, the AST will be shown by default.
+The AST and parse tree will be saved in `output` as `.gv` and `.pdf` format.
 
+How to test:
+```commandline
+python3 test.py
+```
 
 ### Test Files
 

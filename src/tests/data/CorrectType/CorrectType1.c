@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 
-void f(int a, double d, char c, signed s) {}
+int f(int a, double d, char c, signed s) {}
 
 int main()
 {
@@ -11,10 +11,10 @@ int main()
 
     int array[100];
     double dd = array[0] + array[1] + d;
+    int x = (1 < (f(a, d, 'c', 4)/100)) + ((array[50]*5) == 10);
 
     ((1 == 1) && (1 < 2));
 
-    f(a, d, 'c', 4);
 
 	return 0;
 }

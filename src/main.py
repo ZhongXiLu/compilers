@@ -17,7 +17,7 @@ def main(argv):
 
     # Visualise parse tree
     parseTreeDotGen = ParseTreeDotGenerator()
-    parseTreeDotGen.generateDOT(parser, tree, "output/parse_tree.gv", render=True)
+    parseTreeDotGen.generateDOT(parser, tree, "output/parse_tree.gv", render=False)
 
     # Build AST
     astBuilder = ASTBuilder()
