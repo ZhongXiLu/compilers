@@ -102,8 +102,11 @@ class ASTBuilder(CVisitor):
         name = ctx.Id().getText()
         typeSpecifier =  self.visitFunctionTypeSpecifier(ctx.functionTypeSpecifier())
         params = self.visitParams(ctx.params())
-        body = self.visitCompoundStmt(ctx.compoundStmt())
-        return Function.FunctionDecl(ctx.start.line, ctx.start.column, name, params, body, typeSpecifier)
+        try:
+            body = self.visitCompoundStmt(ctx.compoundStmt())
+            return Function.FunctionDef(ctx.start.line, ctx.start.column, name, params, body, typeSpecifier)
+        except:
+            return Function.FunctionDecl(ctx.start.line, ctx.start.column, name, params, typeSpecifier)
 
     # Visit a parse tree produced by CParser#functionTypeSpecifier.
     def visitFunctionTypeSpecifier(self, ctx:CParser.FunctionTypeSpecifierContext):
@@ -131,7 +134,12 @@ class ASTBuilder(CVisitor):
     def visitParamTypeList(self, ctx:CParser.ParamTypeListContext):
         typeSpecifier = self.visitTypeSpecifier(ctx.getChild(0))
         name = ctx.Id().getText()
-        return Function.Parameter(ctx.start.line, ctx.start.column, typeSpecifier, name)
+        size = None
+        try:
+            size = ctx.IntConst().getText()
+        except:
+            pass
+        return Function.Parameter(ctx.start.line, ctx.start.column, typeSpecifier, name, size)
 
     # Visit a parse tree produced by CParser#expression.
     def visitExpression(self, ctx:CParser.ExpressionContext):

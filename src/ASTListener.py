@@ -68,6 +68,12 @@ class ASTListener:
     def exitSubScript(self, node):
         pass
 
+    def enterFunctionDef(self, node):
+        pass
+
+    def exitFunctionDef(self, node):
+        pass
+
     def enterFunctionDecl(self, node):
         pass
 

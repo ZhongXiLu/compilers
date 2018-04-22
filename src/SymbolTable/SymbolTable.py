@@ -10,9 +10,10 @@ class VarInfo:
 
 class FunctionInfo:
 
-    def __init__(self, returnType, paramTypes):
+    def __init__(self, returnType, paramTypes, isDecl=False):
         self.returnType = returnType
         self.paramTypes = paramTypes
+        self.isDecl = isDecl
 
 
 class ArrayInfo:

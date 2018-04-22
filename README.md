@@ -9,6 +9,11 @@
 
 - TODO
 
+### How to test and build
+
+- TODO
+
+
 ### Test Files
 
 - Correct Semantic (`src/tests/data/CorrectSemantic`)
@@ -29,6 +34,8 @@
         - `NestedScope.c`
         - `UndefinedRefToFunc.c`
         - `UndefinedRefToVar.c`
+        - `DeclWithNoDef.c`
+        - `DefWithWrongDecl.c`
     - Redefinitions
         - `RedefinitionFunc.c`
         - `RedefinitionVar.c`

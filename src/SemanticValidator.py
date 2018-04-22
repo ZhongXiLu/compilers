@@ -50,13 +50,16 @@ class SemanticValidator(ASTListener):
             else:
                 self.errors.append(node.getPosition() + ": Undefined reference to '" + node.funcName + "'")
         else:
-            if len(node.args) == len(symbolInfo.paramTypes):
-                for i in range (0, len(symbolInfo.paramTypes)):
-                    foundParamType = getType(node.args[i], symbolInfo.paramTypes[i],self.symbolTable)[0]
-                    if foundParamType != symbolInfo.paramTypes[i]:
-                        self.errors.append(node.getPosition() + ": Wrong parameter type! Expected: '" + symbolInfo.paramTypes[i] + "' found '" + foundParamType + "'")
+            if symbolInfo.isDecl:
+                self.errors.append(node.getPosition() + ": Undefined reference to '" + node.funcName + "'")
             else:
-                self.errors.append(node.getPosition() + ": Wrong amount of parameters! Expected: " + str(len(symbolInfo.paramTypes)) + " found " + str(len(node.args)))
+                if len(node.args) == len(symbolInfo.paramTypes):
+                    for i in range (0, len(symbolInfo.paramTypes)):
+                        foundParamType = getType(node.args[i], symbolInfo.paramTypes[i],self.symbolTable)[0]
+                        if foundParamType != symbolInfo.paramTypes[i]:
+                            self.errors.append(node.getPosition() + ": Wrong parameter type! Expected: '" + symbolInfo.paramTypes[i] + "' found '" + foundParamType + "'")
+                else:
+                    self.errors.append(node.getPosition() + ": Wrong amount of parameters! Expected: " + str(len(symbolInfo.paramTypes)) + " found " + str(len(node.args)))
 
     def enterMutable(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.name)
@@ -72,7 +75,7 @@ class SemanticValidator(ASTListener):
                 self.errors.append(node.index.getPosition() + ": Index out of range! Max index: '" + str(
                     int(symbolInfo.size) - 1) + "' but found '" + str(node.index._int) + "'")
 
-    def enterFunctionDecl(self, node):
+    def enterFunctionDef(self, node):
         # Check if new function already exists
         symbolInfo = self.symbolTable.getSymbol(node.name)
         if symbolInfo is None:
@@ -85,11 +88,42 @@ class SemanticValidator(ASTListener):
             self.symbolTable.addSymbol(node.name, FunctionInfo(node.returns, paramTypes))
             self.symbolTable.newScope()
 
+        elif type(symbolInfo) is FunctionInfo and symbolInfo.isDecl:
+            # Previous declaration => check if definition matches declaration
+            if node.returns != symbolInfo.returnType:
+                self.errors.append(node.getPosition() + ": Wrong return type! Expected: '" + symbolInfo.returnType + "' found '" + node.returns + "'")
+
+            params = node.params
+            paramTypes = []
+            if len(params.params) == len(symbolInfo.paramTypes):
+                for i in range (0, len(symbolInfo.paramTypes)):
+                    if params.params[i].type != symbolInfo.paramTypes[i]:
+                        self.errors.append(params.params[i].getPosition() + ": Wrong parameter type! Expected: '" + symbolInfo.paramTypes[i] + "' found '" + params.params[i].type + "'")
+                    paramTypes.append(params.params[i].type)
+                    self.symbolTable.addSymbol(params.params[i].name, VarInfo(params.params[i].type))
+            else:
+                self.errors.append(node.getPosition() + ": Wrong amount of parameters! Expected: " + str(len(symbolInfo.paramTypes)) + " found " + str(len(params.params)))
+
+            self.symbolTable.addSymbol(node.name, FunctionInfo(node.returns, paramTypes))
+            self.symbolTable.newScope()
+
         else:
             self.errors.append(node.getPosition() + ": Redefinition of '" + node.name + "'")
 
-    def exitFunctionDecl(self, node):
+    def exitFunctionDef(self, node):
         self.symbolTable.endScope()
+
+    def enterFunctionDecl(self, node):
+        # Check if new function already exists
+        symbolInfo = self.symbolTable.getSymbol(node.name)
+        if symbolInfo is None:
+            params = node.params
+            paramTypes = []
+            for param in params.params:
+                paramTypes.append(param.type)
+            self.symbolTable.addSymbol(node.name, FunctionInfo(node.returns, paramTypes, isDecl=True))
+        else:
+            self.errors.append(node.getPosition() + ": Redefinition of '" + node.name + "'")
 
     def enterAssign(self, node):
         symbolInfo = None
