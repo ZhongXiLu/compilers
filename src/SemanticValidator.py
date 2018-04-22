@@ -114,22 +114,18 @@ class SemanticValidator(ASTListener):
                    leftType = leftTypeResult[0]
                else:
                    foundMismatch = True
-                   if "Line " + str(leftTypeResult[2].lineNr) + " position " + str(
-                           leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[
-                       0] + "\" with \"" + leftTypeResult[1] + "\"" not in self.errors:
-                       self.errors.append("Line " + str(leftTypeResult[2].lineNr) + " position " + str(
-                           leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[
-                                              0] + "\" with \"" + leftTypeResult[1] + "\"")
+                   error = leftTypeResult[2].getPosition() + ": type mismatch! Cannot compare '" + leftTypeResult[
+                       0] + "' with '" + leftTypeResult[1] + "'"
+                   if error not in self.errors:
+                       self.errors.append(error)
 
            else:
                if (leftTypeResult[1] == "string" or leftTypeResult[1] == "char"):
                    foundMismatch = True
-                   if "Line " + str(leftTypeResult[2].lineNr) + " position " + str(
-                           leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[
-                       0] + "\" with \"" + leftTypeResult[1] + "\"" not in self.errors:
-                       self.errors.append("Line " + str(leftTypeResult[2].lineNr) + " position " + str(
-                           leftTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + leftTypeResult[
-                                              0] + "\" with \"" + leftTypeResult[1] + "\"")
+                   error = leftTypeResult[2].getPosition() + ": type mismatch! Cannot compare '" + leftTypeResult[
+                       0] + "' with '" + leftTypeResult[1] + "'"
+                   if error not in self.errors:
+                       self.errors.append(error)
 
                else:
                    leftType = leftTypeResult[0]
@@ -142,22 +138,18 @@ class SemanticValidator(ASTListener):
                     rightType = rightTypeResult[0]
                 else:
                     foundMismatch = True
-                    if "Line " + str(rightTypeResult[2].lineNr) + " position " + str(
-                            rightTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + rightTypeResult[
-                        0] + "\" with \"" + rightTypeResult[1] + "\"" not in self.errors:
-                        self.errors.append("Line " + str(rightTypeResult[2].lineNr) + " position " + str(
-                            rightTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + rightTypeResult[
-                                               0] + "\" with \"" + rightTypeResult[1] + "\"")
+                    error = rightTypeResult[2].getPosition() + ": type mismatch! Cannot compare '" + rightTypeResult[
+                        0] + "' with '" + rightTypeResult[1] + "'"
+                    if error not in self.errors:
+                        self.errors.append(error)
 
             else:
                 if (rightTypeResult[1] == "string" or rightTypeResult[1] == "char"):
                     foundMismatch = True
-                    if "Line " + str(rightTypeResult[2].lineNr) + " position " + str(
-                            rightTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + rightTypeResult[
-                        0] + "\" with \"" + rightTypeResult[1] + "\"" not in self.errors:
-                        self.errors.append("Line " + str(rightTypeResult[2].lineNr) + " position " + str(
-                            rightTypeResult[2].positionNr) + ": type mismatch! Cannot compare \"" + rightTypeResult[
-                                               0] + "\" with \"" + rightTypeResult[1] + "\"")
+                    error = rightTypeResult[2].getPosition() + ": type mismatch! Cannot compare '" + rightTypeResult[
+                        0] + "' with '" + rightTypeResult[1] + "'"
+                    if error not in self.errors:
+                        self.errors.append(error)
 
                 else:
                     rightType = rightTypeResult[0]
@@ -165,12 +157,15 @@ class SemanticValidator(ASTListener):
         if not foundMismatch:
             if(leftType == "string" or leftType == "char"):
                 if(rightType!="string" and rightType!="char"):
-                    if "Line " + str(node.lineNr) + " position " + str( node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" + rightType + "\"" not in self.errors:
-                        self.errors.append("Line " + str(node.lineNr) + " position " + str( node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" + rightType + "\"")
+                    error = node.getPosition() + ": type mismatch! Cannot compare '" + leftType + "' with '" + rightType + "'"
+                    if error not in self.errors:
+                        self.errors.append(error)
             else:
                 if(rightType=="string" or rightType=="char"):
-                    if "Line " + str(node.lineNr) + " position " + str(node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" +rightType+ "\"" not in self.errors:
-                        self.errors.append("Line " + str(node.lineNr) + " position " + str(node.positionNr) + ": type mismatch! Cannot compare \"" + leftType + "\" with \"" +rightType+ "\"")
+                    error = node.getPosition() + ": type mismatch! Cannot compare '" + leftType + "' with '" +rightType+ "'"
+                    if error not in self.errors:
+                        self.errors.append(error)
+
 
 def getType(expression,expectedType,symbolTable):
     if type(expression) is Expression.BinOp:
@@ -180,7 +175,7 @@ def getType(expression,expectedType,symbolTable):
                 return ["int", expression.right.getPosition()]
             else:
                 childResult = checkBinOp(expression.right, symbolTable)
-                return [childResult[1], "Line " + str(childResult[2].lineNr) + " position " + str(childResult[2].positionNr)]
+                return [childResult[1], childResult[2].getPosition()]
         if type(expression.right) is Expression.Mutable:
             assignee = symbolTable.getSymbol(expression.right.name)
         if type(expression.right) is Expression.Call:
@@ -197,7 +192,7 @@ def getType(expression,expectedType,symbolTable):
                     or assigneeType == "signed" or assigneeType == "unsigned":
                 if expectedType == "short" or expectedType == "int" or expectedType == "signed"\
                         or expectedType == "unsigned" or expectedType == "float" or expectedType == "double":
-                    return getType(expression.left, expectedType,symbolTable)
+                    return getType(expression.left, expectedType, symbolTable)
                 else:
                     return ["int", expression.right.getPosition()]
             if type(expression.right) is Literals.Double or assigneeType == "double" or assigneeType == "float":
@@ -281,6 +276,7 @@ def getType(expression,expectedType,symbolTable):
             return [expectedType, expression.getPosition()]
         else:
             return ["char", expression.getPosition()]
+
 
 def checkBinOp(expression,symbolTable):
     if type(expression.left) is not Expression.BinOp:

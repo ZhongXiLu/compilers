@@ -6,6 +6,7 @@ double f() { return 1.0; }
 int main()
 {
     int a;
+    double array[3] = {1.0, 2.0, 3.0};
 
     a = 1;
     a = 1 + 1;
@@ -14,8 +15,6 @@ int main()
     1 == 1 || 1 != 1;
     1 <= 1 && 1 >= 1;
     5*((a - 1)/10);
-
-    double array[3] = {1.0, 2.0, 3.0};
 
     array[0] + 1.0;
     f() + 1.0;
