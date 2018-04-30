@@ -7,6 +7,7 @@ from DotGenerators.ParseTreeDotGenerator import ParseTreeDotGenerator
 from ASTBuilder import ASTBuilder
 from DotGenerators.DotGraphBuilder import DotGraphBuilder
 from SemanticValidator import SemanticValidator
+from Optimiser import Optimiser
 
 def main(argv):
     inputFile = FileStream(argv[1])
@@ -14,6 +15,9 @@ def main(argv):
     stream = CommonTokenStream(lexer)
     parser = CParser(stream)
     tree = parser.prog()
+
+    if parser.getNumberOfSyntaxErrors():
+        return
 
     # Visualise parse tree
     parseTreeDotGen = ParseTreeDotGenerator()
@@ -23,17 +27,23 @@ def main(argv):
     astBuilder = ASTBuilder()
     AST = astBuilder.visit(tree)
 
-    # Visualise AST
-    dotGraph = AST.visit(DotGraphBuilder)
-    dotGraph.render("output/ast.gv", view=True)
-
     # Semantic Validition
     semanticValidator = SemanticValidator()
     AST.accept(semanticValidator)
 
     # Print errors, if any
-    for error in semanticValidator.errors:
-        print("ERROR: " + error)
+    if semanticValidator.errors:
+        for error in semanticValidator.errors:
+            print("ERROR: " + error)
+        return
+
+    # Code optimiser
+    optimiser = Optimiser()
+    AST.accept(optimiser)
+
+    # Visualise AST
+    dotGraph = AST.visit(DotGraphBuilder)
+    dotGraph.render("output/ast.gv", view=True)
 
 
 if __name__ == '__main__':
