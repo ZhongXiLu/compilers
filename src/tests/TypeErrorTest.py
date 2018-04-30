@@ -28,41 +28,41 @@ class TypeErrorTestCase(unittest.TestCase):
 
     def test_assingIntToChar(self):
         errors = self.semanticAnalyse("data/TypeErrors/AssignIntToChar.c")
-        self.assertEqual(errors[0], "Line 6 at 11: Type mismatch: expected 'char' but found 'int'")
+        self.assertEqual(errors[0], "Line 6 at 11: Type mismatch for 'a': expected 'char' but found 'int'")
 
     def test_assignIntToString(self):
         errors = self.semanticAnalyse("data/TypeErrors/AssignIntToString.c")
-        self.assertEqual(errors[0], "Line 6 at 12: Type mismatch: expected 'char*' but found 'int'")
+        self.assertEqual(errors[0], "Line 6 at 12: Type mismatch for 'a': expected 'char*' but found 'int'")
 
     def test_assignStringToInt(self):
         errors = self.semanticAnalyse("data/TypeErrors/AssignStringToInt.c")
-        self.assertEqual(errors[0], "Line 6 at 10: Type mismatch: expected 'int' but found 'string'")
+        self.assertEqual(errors[0], "Line 6 at 10: Type mismatch for 'a': expected 'int' but found 'string'")
 
     def test_assignWrongCallToInt(self):
         errors = self.semanticAnalyse("data/TypeErrors/AssignWrongCallToInt.c")
-        self.assertEqual(errors[0], "Line 8 at 10: Type mismatch: expected 'int' but found 'char'")
+        self.assertEqual(errors[0], "Line 8 at 10: Type mismatch for 'a': expected 'int' but found 'char'")
 
     def test_assignWrongArrayElementToChar(self):
         errors = self.semanticAnalyse("data/TypeErrors/AssignWrongArrayElementToChar.c")
-        self.assertEqual(errors[0], "Line 7 at 14: Type mismatch: expected 'char' but found 'int'")
+        self.assertEqual(errors[0], "Line 7 at 14: Type mismatch for 'c': expected 'char' but found 'int'")
 
     def test_intPlusString(self):
         errors = self.semanticAnalyse("data/TypeErrors/IntPlusString.c")
-        self.assertEqual(errors[0], "Line 6 at 14: Type mismatch: expected 'int' but found 'string'")
+        self.assertEqual(errors[0], "Line 6 at 14: Type mismatch for 'a': expected 'int' but found 'string'")
 
     # TODO: support "double" + "int"?
 
     def test_wrongNestedExpressions(self):
         errors = self.semanticAnalyse("data/TypeErrors/WrongNestedExpressions.c")
-        self.assertEqual(errors[0], "Line 9 at 17: Type mismatch: expected 'int' but found 'char'")
+        self.assertEqual(errors[0], "Line 9 at 17: Type mismatch for 'a': expected 'int' but found 'char'")
 
     def test_wrongTypeOfParams(self):
         errors = self.semanticAnalyse("data/TypeErrors/WrongTypeOfParams.c")
-        self.assertEqual(errors[0], "Line 11 at 5: Wrong parameter type! Expected: 'char' found 'unsigned'")
+        self.assertEqual(errors[0], "Line 11 at 5: Wrong parameter type for 'f'! Expected: 'char' found 'unsigned'")
 
     def test_wrongTypeOfParams2(self):
         errors = self.semanticAnalyse("data/TypeErrors/WrongTypeOfParams2.c")
-        self.assertEqual(errors[0], "Line 8 at 5: Wrong parameter type! Expected: 'char' found 'int'")
+        self.assertEqual(errors[0], "Line 8 at 5: Wrong parameter type for 'f'! Expected: 'char' found 'int'")
 
 
 if __name__ == '__main__':

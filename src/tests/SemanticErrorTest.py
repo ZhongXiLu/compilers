@@ -52,7 +52,7 @@ class SemanticErrorTestCase(unittest.TestCase):
 
     def test_tooMuchParams(self):
         errors = self.semanticAnalyse("data/SemanticErrors/TooMuchParams.c")
-        self.assertEqual(errors[0], "Line 8 at 5: Wrong amount of parameters! Expected: 1 found 3")
+        self.assertEqual(errors[0], "Line 8 at 5: Wrong amount of parameters for 'f'! Expected: 1 found 3")
 
     def test_declWithNotDef(self):
         errors = self.semanticAnalyse("data/SemanticErrors/DeclWithNoDef.c")
@@ -60,8 +60,8 @@ class SemanticErrorTestCase(unittest.TestCase):
 
     def test_defWithWrongDecl(self):
         errors = self.semanticAnalyse("data/SemanticErrors/DefWithWrongDecl.c")
-        self.assertEqual(errors[0], "Line 6 at 1: Wrong return type! Expected: 'void' found 'int'")
-        self.assertEqual(errors[1], "Line 6 at 1: Wrong amount of parameters! Expected: 1 found 0")
+        self.assertEqual(errors[0], "Line 6 at 1: Wrong return type for 'f'! Expected: 'void' found 'int'")
+        self.assertEqual(errors[1], "Line 6 at 1: Wrong amount of parameters for 'f'! Expected: 1 found 0")
 
 
 if __name__ == '__main__':
