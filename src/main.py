@@ -38,7 +38,7 @@ def main(argv):
         return
 
     # Code optimiser
-    optimiser = Optimiser()
+    optimiser = Optimiser(semanticValidator.symbolTable)
     AST.accept(optimiser)
 
     # Visualise AST

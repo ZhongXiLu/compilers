@@ -1,4 +1,7 @@
 
+# Personal test files
+test.c
+
 # dot generated files
 *.dot
 *.gv

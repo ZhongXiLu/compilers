@@ -1,32 +1,10 @@
 
 
-class VarInfo:
-
-    def __init__(self, type):
-        self.type = type
-        # self.declLineNr
-        # self.refLineNrs
-
-
-class FunctionInfo:
-
-    def __init__(self, returnType, paramTypes, isDecl=False):
-        self.returnType = returnType
-        self.paramTypes = paramTypes
-        self.isDecl = isDecl
-
-
-class ArrayInfo:
-
-    def __init__(self, type, size):
-        self.type = type
-        self.size = size
-
-
 class Scope:
 
     def __init__(self):
         self.table = {}
+        self.currentChild = 0   # Used for traversing
         self.children = []
         self.parent = None
 

@@ -1,6 +1,7 @@
 
 from ASTListener import ASTListener
 from SymbolTable.SymbolTable import *
+from SymbolTable.SymbolInfo import *
 from AST import Expression, Function, Literals, Program, Statement, Variable
 
 
@@ -55,6 +56,7 @@ class SemanticValidator(ASTListener):
             else:
                 self.errors.append(node.getPosition() + ": Undefined reference to '" + node.funcName + "'")
         else:
+            symbolInfo.used = True
             if symbolInfo.isDecl:
                 self.errors.append(node.getPosition() + ": Undefined reference to '" + node.funcName + "'")
             else:
@@ -70,12 +72,15 @@ class SemanticValidator(ASTListener):
         symbolInfo = self.symbolTable.getSymbol(node.name)
         if symbolInfo is None or (type(symbolInfo) is not VarInfo and type(symbolInfo) is not ArrayInfo):
             self.errors.append(node.getPosition() + ": Undefined reference to '" + node.name + "'")
+        else:
+            symbolInfo.used = True
 
     def enterSubScript(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.mutable.name)
         if symbolInfo is None or type(symbolInfo) is not ArrayInfo:
             self.errors.append(node.getPosition() + ": Subscripted value '" + node.mutable.name + "' is not an array")
         else:
+            symbolInfo.used = True
             if int(symbolInfo.size) < int(node.index._int):
                 self.errors.append(node.index.getPosition() + ": Index out of range for '" + node.mutable.name + "'! Max index: '" + str(
                     int(symbolInfo.size) - 1) + "' but found '" + str(node.index._int) + "'")
@@ -95,8 +100,8 @@ class SemanticValidator(ASTListener):
 
         elif type(symbolInfo) is FunctionInfo and symbolInfo.isDecl:
             # Previous declaration => check if definition matches declaration
-            if node.returns != symbolInfo.returnType:
-                self.errors.append(node.getPosition() + ": Wrong return type for '" + node.name + "'! Expected: '" + symbolInfo.returnType + "' found '" + node.returns + "'")
+            if node.returns != symbolInfo.type:
+                self.errors.append(node.getPosition() + ": Wrong return type for '" + node.name + "'! Expected: '" + symbolInfo.type + "' found '" + node.returns + "'")
 
             params = node.params
             paramTypes = []
@@ -225,8 +230,6 @@ def getType(expression,expectedType,symbolTable):
             assigneeType = "AType"
             if hasattr(assignee, "type"):
                 assigneeType = assignee.type
-            if hasattr(assignee, "returnType"):
-                assigneeType = assignee.returnType
             if type(expression.right) is Literals.Int or assigneeType == "short" or assigneeType == "int" \
                     or assigneeType == "signed" or assigneeType == "unsigned":
                 if expectedType == "short" or expectedType == "int" or expectedType == "signed"\
@@ -258,7 +261,7 @@ def getType(expression,expectedType,symbolTable):
     if type(expression) is Expression.Call:
         found = symbolTable.getSymbol(expression.funcName)
         if found is not None:
-            foundType = found.returnType
+            foundType = found.type
         else:
             foundType = "undefined input"
     if type(expression) is Expression.SubScript:

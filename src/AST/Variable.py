@@ -60,7 +60,7 @@ class ArrayInitialize(ASTNode):
         super().__init__(lineNr, positionNr)
         self.name = name                # string
         self.size = size                # int
-        self.initialize = initialize    # ArrayInitialize node
+        self.initialize = initialize    # ArrayInitializeList node
 
     def visit(self, visitorObject):
         if self.initialize is not None:
