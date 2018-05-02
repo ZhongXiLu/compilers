@@ -4,7 +4,7 @@ class Scope:
 
     def __init__(self):
         self.table = {}
-        self.currentChild = 0   # Used for traversing
+        self.currentChild = 0
         self.children = []
         self.parent = None
 
@@ -16,6 +16,17 @@ class Scope:
 
     def endScope(self):
         return self.parent
+
+    # Used for traversing
+    def getNextScope(self):
+        self.currentChild += 1
+        return self.children[self.currentChild-1]
+
+    # Reset the child pointers (used when traversing the symbol table again)
+    def reset(self):
+        self.currentChild = 0
+        for child in self.children:
+            child.reset()
 
 
 class SymbolTable:
@@ -65,3 +76,8 @@ class SymbolTable:
 
     def addSymbol(self, symbol, symbolInfo):
         self.currentScope.table[symbol] = symbolInfo
+
+    # Reset the child pointers (used when traversing the symbol table again)
+    def reset(self):
+        self.currentScope = self.scope
+        self.currentScope.reset()

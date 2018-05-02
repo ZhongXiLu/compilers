@@ -10,8 +10,8 @@ class Optimiser(ASTListener):
         self.symbolTable = symbolTable
 
     def enterProgram(self, node):
-        self.symbolTable.currentScope.currentChild += 1
-        self.symbolTable.currentScope = self.symbolTable.currentScope.children[self.symbolTable.currentScope.currentChild-1]
+        self.symbolTable.reset()
+        self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
 
         # Check for unused functions
         i = 0
@@ -61,8 +61,7 @@ class Optimiser(ASTListener):
         return False
 
     def enterCompound(self, node):
-        self.symbolTable.currentScope.currentChild += 1
-        self.symbolTable.currentScope = self.symbolTable.currentScope.children[self.symbolTable.currentScope.currentChild-1]
+        self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
 
         self.returnInCompund(node)
 
@@ -88,8 +87,7 @@ class Optimiser(ASTListener):
         # Still need to check for break's inside other statements..., no easy way to do it...
 
     def enterFunctionDef(self, node):
-        self.symbolTable.currentScope.currentChild += 1
-        self.symbolTable.currentScope = self.symbolTable.currentScope.children[self.symbolTable.currentScope.currentChild-1]
+        self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
 
     def exitFunctionDef(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent

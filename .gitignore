@@ -1,6 +1,13 @@
 
 # Personal test files
 test.c
+test.p
+faculteit.p
+fibonacci.p
+p_prog.p
+
+# P Machine source
+Pmachine/
 
 # dot generated files
 *.dot

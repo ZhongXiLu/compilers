@@ -8,6 +8,7 @@ from ASTBuilder import ASTBuilder
 from DotGenerators.DotGraphBuilder import DotGraphBuilder
 from SemanticValidator import SemanticValidator
 from Optimiser import Optimiser
+from CodeGenerator import CodeGenerator
 
 def main(argv):
     inputFile = FileStream(argv[1])
@@ -44,6 +45,10 @@ def main(argv):
     # Visualise AST
     dotGraph = AST.visit(DotGraphBuilder)
     dotGraph.render("output/ast.gv", view=True)
+
+    # Code generator
+    codeGenerator = CodeGenerator(semanticValidator.symbolTable)
+    AST.accept(codeGenerator)
 
 
 if __name__ == '__main__':

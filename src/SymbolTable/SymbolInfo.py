@@ -5,6 +5,7 @@ class SymbolInfo:
     def __init__(self, type):
         self.type = type
         self.used = False   # Check if this symbol is ever used
+        self.address = 0    # Used for code generation (= address of the symbol)
 
 
 class VarInfo(SymbolInfo):
