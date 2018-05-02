@@ -140,6 +140,12 @@ class ASTListener:
     def exitIf(self, node):
         pass
 
+    def enterBody(self, node):
+        pass
+
+    def enterElse(self, node):
+        pass
+
     def enterWhile(self, node):
         pass
 

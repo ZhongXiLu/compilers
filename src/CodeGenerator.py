@@ -10,11 +10,23 @@ class CodeGenerator(ASTListener):
     def __init__(self, symbolTable, file="p_prog.p"):
         self.symbolTable = symbolTable
         self.nextFreeAddress = 0        # = environment
+        self.labelId = 0
+
+        # Temporary variables
+        self.endLabel = None        # temporary store label names to use for later
+        self.elseLabel = None
+        self.isAssignee = False     # small hack to make sure mutables arent printed on lhs
+
         self.file = open(file, "w")
+
 
     def getFreeAddress(self):
         self.nextFreeAddress += 1
         return self.nextFreeAddress - 1
+
+    def getFreeLabel(self):
+        self.labelId += 1
+        return "l" + str(self.labelId - 1)
 
     def getPType(self, type):
         if type == "char" or type == "char*":
@@ -23,6 +35,7 @@ class CodeGenerator(ASTListener):
             return "r"
         else:
             return "i"
+
 
     def enterProgram(self, node):
         self.symbolTable.reset()
@@ -63,9 +76,12 @@ class CodeGenerator(ASTListener):
             symbol = self.symbolTable.getSymbol(node.name)
             self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
 
-    # def enterMutable(self, node):
-    #     symbol = self.symbolTable.getSymbol(node.name)
-    #     self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+    def enterMutable(self, node):
+        if not self.isAssignee:
+            symbol = self.symbolTable.getSymbol(node.name)
+            self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+        else:
+            self.isAssignee = False
 
     def enterInt(self, node):
         self.file.write("ldc i " + str(node._int) + "\n")
@@ -78,6 +94,9 @@ class CodeGenerator(ASTListener):
 
     def enterChar(self, node):
         self.file.write("ldc c " + str(node.char) + "\n")
+
+    def enterAssign(self, node):
+        self.isAssignee = True
 
     def exitAssign(self, node):
         symbol = self.symbolTable.getSymbol(node.left.name)
@@ -113,3 +132,21 @@ class CodeGenerator(ASTListener):
             self.file.write("and\n")
         elif node.operator == Expression.BinOpTokens.OR:
             self.file.write("or\n")
+
+    def enterBody(self, node):
+        # Make sure expression is evaluated first
+        if node.elseBody is None:
+            self.endLabel = self.getFreeLabel()
+            self.file.write("fjp " + self.endLabel + "\n")      # jump to end
+        else:
+            self.elseLabel = self.getFreeLabel()
+            self.file.write("fjp " + self.elseLabel + "\n")     # jump to else branch
+
+    def enterElse(self, node):
+        self.endLabel = self.getFreeLabel()
+        self.file.write("ujp " + self.endLabel + "\n")      # end of if branch -> jump to end
+        self.file.write(self.elseLabel + ":" + "\n")        # mark start of else branch
+
+    def exitIf(self, node):
+        self.file.write(self.endLabel + ":" + "\n")
+
