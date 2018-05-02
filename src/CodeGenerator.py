@@ -2,6 +2,7 @@
 from ASTListener import ASTListener
 from SymbolTable.SymbolTable import *
 from AST import Expression, Function, Literals, Program, Statement, Variable
+from SemanticValidator import SemanticValidator, getType
 
 
 class CodeGenerator(ASTListener):
@@ -62,6 +63,10 @@ class CodeGenerator(ASTListener):
             symbol = self.symbolTable.getSymbol(node.name)
             self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
 
+    # def enterMutable(self, node):
+    #     symbol = self.symbolTable.getSymbol(node.name)
+    #     self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+
     def enterInt(self, node):
         self.file.write("ldc i " + str(node._int) + "\n")
 
@@ -77,3 +82,34 @@ class CodeGenerator(ASTListener):
     def exitAssign(self, node):
         symbol = self.symbolTable.getSymbol(node.left.name)
         self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+
+    def exitBinOp(self, node):
+        # Arithmetic
+        if node.operator == Expression.BinOpTokens.PLUS:
+            self.file.write("add " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+        elif node.operator == Expression.BinOpTokens.MIN:
+            self.file.write("sub " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+        elif node.operator == Expression.BinOpTokens.MULT:
+            self.file.write("mul " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+        elif node.operator == Expression.BinOpTokens.DIV:
+            self.file.write("div " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+
+        # Comparison
+        elif node.operator == Expression.BinOpTokens.LT:
+            self.file.write("les " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+        elif node.operator == Expression.BinOpTokens.GT:
+            self.file.write("grt " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+        elif node.operator == Expression.BinOpTokens.LTE:
+            self.file.write("leq " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+        elif node.operator == Expression.BinOpTokens.GTE:
+            self.file.write("geq " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+        elif node.operator == Expression.BinOpTokens.EQ:
+            self.file.write("equ " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+        elif node.operator == Expression.BinOpTokens.NEQ:
+            self.file.write("neq " + self.getPType(getType(node, "", self.symbolTable)[0]) + "\n")
+
+        # Logical
+        elif node.operator == Expression.BinOpTokens.AND:
+            self.file.write("and\n")
+        elif node.operator == Expression.BinOpTokens.OR:
+            self.file.write("or\n")
