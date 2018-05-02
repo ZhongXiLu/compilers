@@ -44,7 +44,7 @@ def main(argv):
 
     # Visualise AST
     dotGraph = AST.visit(DotGraphBuilder)
-    dotGraph.render("output/ast.gv", view=True)
+    dotGraph.render("output/ast.gv", view=False)
 
     # Code generator
     codeGenerator = CodeGenerator(semanticValidator.symbolTable)

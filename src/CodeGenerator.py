@@ -15,11 +15,13 @@ class CodeGenerator(ASTListener):
         self.nextFreeAddress += 1
         return self.nextFreeAddress - 1
 
-    def isCharType(self, type):
+    def getPType(self, type):
         if type == "char" or type == "char*":
-            return True
+            return "c"
+        elif type == "double" or type == "double*" or type == "float" or type == "float*":
+            return "r"
         else:
-            return False
+            return "i"
 
     def enterProgram(self, node):
         self.symbolTable.reset()
@@ -46,8 +48,10 @@ class CodeGenerator(ASTListener):
     def enterVarDeclInitialize(self, node):
         # Initialize variable with default value
         self.symbolTable.getSymbol(node.name).address = self.getFreeAddress()
-        if self.isCharType(self.symbolTable.getSymbol(node.name).type):
+        if self.getPType(self.symbolTable.getSymbol(node.name).type) == "c":
             self.file.write("ldc c ' '\n")
+        elif self.getPType(self.symbolTable.getSymbol(node.name).type) == "r":
+            self.file.write("ldc r 0.0\n")
         else:
             self.file.write("ldc i 0\n")
 
@@ -55,7 +59,21 @@ class CodeGenerator(ASTListener):
         # Overwrite value with the actual initialized value, if any
         if node.expression is not None:
             # => top of stack is result of expression (= initialized value)
-            if self.isCharType(self.symbolTable.getSymbol(node.name).type):
-                self.file.write("sro c " + str(self.symbolTable.getSymbol(node.name).address) + "\n")
-            else:
-                self.file.write("sro i " + str(self.symbolTable.getSymbol(node.name).address) + "\n")
+            symbol = self.symbolTable.getSymbol(node.name)
+            self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+
+    def enterInt(self, node):
+        self.file.write("ldc i " + str(node._int) + "\n")
+
+    def enterDouble(self, node):
+        self.file.write("ldc r " + str(node.double) + "\n")
+
+    def enterString(self, node):
+        self.file.write("ldc c " + str(node.string) + "\n")
+
+    def enterChar(self, node):
+        self.file.write("ldc c " + str(node.char) + "\n")
+
+    def exitAssign(self, node):
+        symbol = self.symbolTable.getSymbol(node.left.name)
+        self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
