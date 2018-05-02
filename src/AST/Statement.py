@@ -74,10 +74,10 @@ class If(ASTNode):
     def accept(self, listener):
         listener.enterIf(self)
         self.expression.accept(listener)
-        listener.enterBody(self)        # Added for easier code generation
+        listener.enterIfBranch(self)        # Added for easier code generation
         self.body.accept(listener)
         if self.elseBody is not None:
-            listener.enterElse(self)    # Added for easier code generation
+            listener.enterElseBranch(self)  # Added for easier code generation
             self.elseBody.accept(listener)
         listener.exitIf(self)
 
@@ -95,6 +95,7 @@ class While(ASTNode):
     def accept(self, listener):
         listener.enterWhile(self)
         self.expression.accept(listener)
+        listener.enterWhileBranch(self)     # Added for easier code generation
         self.body.accept(listener)
         listener.exitWhile(self)
 

@@ -15,6 +15,7 @@ class CodeGenerator(ASTListener):
         # Temporary variables
         self.endLabel = None        # temporary store label names to use for later
         self.elseLabel = None
+        self.startLabel = None
         self.isAssignee = False     # small hack to make sure mutables arent printed on lhs
 
         self.file = open(file, "w")
@@ -133,7 +134,7 @@ class CodeGenerator(ASTListener):
         elif node.operator == Expression.BinOpTokens.OR:
             self.file.write("or\n")
 
-    def enterBody(self, node):
+    def enterIfBranch(self, node):
         # Make sure expression is evaluated first
         if node.elseBody is None:
             self.endLabel = self.getFreeLabel()
@@ -142,7 +143,7 @@ class CodeGenerator(ASTListener):
             self.elseLabel = self.getFreeLabel()
             self.file.write("fjp " + self.elseLabel + "\n")     # jump to else branch
 
-    def enterElse(self, node):
+    def enterElseBranch(self, node):
         self.endLabel = self.getFreeLabel()
         self.file.write("ujp " + self.endLabel + "\n")      # end of if branch -> jump to end
         self.file.write(self.elseLabel + ":" + "\n")        # mark start of else branch
@@ -150,3 +151,15 @@ class CodeGenerator(ASTListener):
     def exitIf(self, node):
         self.file.write(self.endLabel + ":" + "\n")
 
+    def enterWhile(self, node):
+        self.startLabel = self.getFreeLabel()
+        self.file.write(self.startLabel + ":" + "\n")
+
+    def enterWhileBranch(self, node):
+        # Make sure expression is evaluated first
+        self.endLabel = self.getFreeLabel()
+        self.file.write("fjp " + self.endLabel + "\n")      # jump to end
+
+    def exitWhile(self, node):
+        self.file.write("ujp " + self.startLabel + "\n")    # end of while branch -> jump to start
+        self.file.write(self.endLabel + ":" + "\n")
