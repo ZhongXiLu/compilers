@@ -47,7 +47,7 @@ def main(argv):
     dotGraph.render("output/ast.gv", view=False)
 
     # Code generator
-    codeGenerator = CodeGenerator(semanticValidator.symbolTable)
+    codeGenerator = CodeGenerator(optimiser.symbolTable)
     AST.accept(codeGenerator)
 
 

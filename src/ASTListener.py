@@ -74,6 +74,9 @@ class ASTListener:
     def exitFunctionDef(self, node):
         pass
 
+    def enterFunctionBody(self, node):
+        pass
+
     def enterFunctionDecl(self, node):
         pass
 

@@ -18,6 +18,7 @@ class FunctionDef(ASTNode):
     def accept(self, listener):
         listener.enterFunctionDef(self)
         self.params.accept(listener)
+        listener.enterFunctionBody(self)
         self.body.accept(listener)
         listener.exitFunctionDef(self)
 

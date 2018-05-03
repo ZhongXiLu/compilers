@@ -13,6 +13,7 @@ class Optimiser(ASTListener):
         self.symbolTable.reset()
         self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
 
+    def exitProgram(self, node):
         # Check for unused functions
         i = 0
         while i < len(node.declarationList.declarations):
@@ -22,10 +23,10 @@ class Optimiser(ASTListener):
                 if node.declarationList.declarations[i].name != "main" and \
                         not self.symbolTable.getSymbol(node.declarationList.declarations[i].name).used:
                     del node.declarationList.declarations[i]
+                    del self.symbolTable.currentScope.children[i]   # also delete the scope
                     i -= 1
             i += 1
 
-    def exitProgram(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
 
     def returnInCompund(self, node):

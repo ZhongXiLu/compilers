@@ -7,9 +7,11 @@ from SemanticValidator import SemanticValidator, getType
 
 class CodeGenerator(ASTListener):
 
+    # TODO: free variables after endScope?
+
     def __init__(self, symbolTable, file="p_prog.p"):
         self.symbolTable = symbolTable
-        self.nextFreeAddress = 0        # = environment
+        self.nextFreeAddress = 5        # = environment
         self.labelId = 0
 
         # Temporary variables
@@ -41,6 +43,9 @@ class CodeGenerator(ASTListener):
     def enterProgram(self, node):
         self.symbolTable.reset()
         self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
+        self.file.write("ssp 5\n")
+        # TODO: ...
+        self.file.write("ujp main\n")
 
     def exitProgram(self, node):
         self.file.write("hlt\n")
@@ -57,7 +62,20 @@ class CodeGenerator(ASTListener):
     def enterFunctionDef(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
 
+        if node.name != "main":
+            self.file.write("spp " + str(len(node.params.params)) + "\n")   # TODO: correct?
+            # TODO: ...
+            self.file.write("ujp " + node.name + "\n")
+
+    def enterFunctionBody(self, node):
+        self.file.write(node.name + ":" + "\n")
+
     def exitFunctionDef(self, node):
+        if node.name != "main":
+            if node.returns != "void":
+                self.file.write("retf\n")   # result in local stack
+            else:
+                self.file.write("retp\n")
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
 
     def enterVarDeclInitialize(self, node):
