@@ -70,6 +70,7 @@ class ArrayInitialize(ASTNode):
 
     def accept(self, listener):
         listener.enterArrayInitialize(self)
+        self.initialize.accept(listener)
         listener.exitArrayInitialize(self)
 
 
@@ -84,4 +85,6 @@ class ArrayInitializeList(ASTNode):
 
     def accept(self, listener):
         listener.enterArrayInitializeList(self)
+        for initialize in self.list:
+            initialize.accept(listener)
         listener.exitArrayInitializeList(self)

@@ -81,9 +81,9 @@ class SemanticValidator(ASTListener):
             self.errors.append(node.getPosition() + ": Subscripted value '" + node.mutable.name + "' is not an array")
         else:
             symbolInfo.used = True
-            if int(symbolInfo.size) < int(node.index._int):
-                self.errors.append(node.index.getPosition() + ": Index out of range for '" + node.mutable.name + "'! Max index: '" + str(
-                    int(symbolInfo.size) - 1) + "' but found '" + str(node.index._int) + "'")
+            # if int(symbolInfo.size) < int(node.index._int):
+            #     self.errors.append(node.index.getPosition() + ": Index out of range for '" + node.mutable.name + "'! Max index: '" + str(
+            #         int(symbolInfo.size) - 1) + "' but found '" + str(node.index._int) + "'")
 
     def enterFunctionDef(self, node):
         # Check if new function already exists

@@ -99,7 +99,7 @@ class Optimiser(ASTListener):
         i = 0
         while i < len(node.declInitializeList):
             if type(node.declInitializeList[i]) is Variable.VarDeclInitialize or \
-                    type(node.declInitializeList[i]) is Function.ArrayInitialize:
+                    type(node.declInitializeList[i]) is Variable.ArrayInitialize:
                 if not self.symbolTable.getSymbol(node.declInitializeList[i].name).used:
                     del node.declInitializeList[i]
                     i -= 1

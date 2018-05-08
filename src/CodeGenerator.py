@@ -91,6 +91,9 @@ class CodeGenerator(ASTListener):
             symbol = self.symbolTable.getSymbol(node.name)
             self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
 
+    def enterArrayInitialize(self, node):
+        pass
+
     def enterMutable(self, node):
         if not self.isAssignee:
             symbol = self.symbolTable.getSymbol(node.name)
@@ -114,8 +117,12 @@ class CodeGenerator(ASTListener):
         self.isAssignee = True
 
     def exitAssign(self, node):
-        symbol = self.symbolTable.getSymbol(node.left.name)
-        self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+        if type(node.left) is Expression.Mutable:
+            symbol = self.symbolTable.getSymbol(node.left.name)
+            self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+        else:
+            # TODO: SubScript
+            pass
 
     def exitBinOp(self, node):
         # Arithmetic

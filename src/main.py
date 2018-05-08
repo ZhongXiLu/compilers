@@ -10,7 +10,9 @@ from SemanticValidator import SemanticValidator
 from Optimiser import Optimiser
 from CodeGenerator import CodeGenerator
 
+
 def main(argv):
+
     inputFile = FileStream(argv[1])
     lexer = CLexer(inputFile)
     stream = CommonTokenStream(lexer)
@@ -28,7 +30,7 @@ def main(argv):
     astBuilder = ASTBuilder()
     AST = astBuilder.visit(tree)
 
-    # Semantic Validition
+    # Semantic Validation
     semanticValidator = SemanticValidator()
     AST.accept(semanticValidator)
 
