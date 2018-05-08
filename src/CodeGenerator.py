@@ -52,11 +52,6 @@ class CodeGenerator(ASTListener):
         self.file.write("hlt\n")
         self.file.close()
 
-        print(self.ifEndLabel)
-        print(self.elseLabel)
-        print(self.whileEndLabel)
-        print(self.whileStartLabel)
-
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
 
     def enterCompound(self, node):
@@ -77,11 +72,6 @@ class CodeGenerator(ASTListener):
         self.file.write(node.name + ":" + "\n")
 
     def exitFunctionDef(self, node):
-        if node.name != "main":
-            if node.returns != "void":
-                self.file.write("retf\n")   # result in local stack
-            else:
-                self.file.write("retp\n")
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
 
     def enterVarDeclInitialize(self, node):
@@ -190,3 +180,9 @@ class CodeGenerator(ASTListener):
 
     def exitBreak(self, node):
         self.file.write("ujp " + self.whileEndLabel[-1] + "\n")     # jump to end
+
+    def exitReturn(self, node):
+        if node.expression is not None:
+            self.file.write("retf\n")  # result in local stack
+        else:
+            self.file.write("retp\n")
