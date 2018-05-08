@@ -19,7 +19,8 @@ class CodeGenerator(ASTListener):
         self.elseLabel = []
         self.whileStartLabel = []
         self.whileEndLabel = []
-        self.isAssignee = False         # small hack to make sure mutables arent printed on lhs
+        self.skipMutable = False         # small hack to make sure mutables arent printed on lhs
+        self.skipSubScript = False
 
         self.file = open(file, "w")
 
@@ -92,14 +93,43 @@ class CodeGenerator(ASTListener):
             self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
 
     def enterArrayInitialize(self, node):
-        pass
+        # Initialize array with default values
+        freeAddress = self.getFreeAddress()
+        self.symbolTable.getSymbol(node.name).address = freeAddress
+        self.nextFreeAddress = freeAddress + int(node.size)
+
+        for i in range(int(node.size)):
+            if self.getPType(self.symbolTable.getSymbol(node.name).type) == "c":
+                self.file.write("ldc c ' '\n")
+            elif self.getPType(self.symbolTable.getSymbol(node.name).type) == "r":
+                self.file.write("ldc r 0.0\n")
+            else:
+                self.file.write("ldc i 0\n")
+
+    def exitArrayInitialize(self, node):
+        symbol = self.symbolTable.getSymbol(node.name)
+        for i in range(len(node.initialize.list)):
+            self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address + int(node.size) - i - 1) + "\n")
 
     def enterMutable(self, node):
-        if not self.isAssignee:
+        if not self.skipMutable:
             symbol = self.symbolTable.getSymbol(node.name)
             self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
         else:
-            self.isAssignee = False
+            self.skipMutable = False
+
+    def enterSubScript(self, node):
+        # Load the start address of the array
+        self.file.write("ldc a " + str(self.symbolTable.getSymbol(node.mutable.name).address) + "\n")
+        self.skipMutable = True
+
+    def exitSubScript(self, node):
+        # expression (on the stack) is the index of the accessed array
+        self.file.write("ixa " + str(1) + "\n")     # we only allow one dimensional arrays
+        if not self.skipSubScript:
+            self.file.write("ind " + self.getPType(self.symbolTable.getSymbol(node.mutable.name).type) + "\n")
+        else:
+            self.skipSubScript = False
 
     def enterInt(self, node):
         self.file.write("ldc i " + str(node._int) + "\n")
@@ -114,15 +144,18 @@ class CodeGenerator(ASTListener):
         self.file.write("ldc c " + str(node.char) + "\n")
 
     def enterAssign(self, node):
-        self.isAssignee = True
+        if type(node.left) is Expression.Mutable:
+            self.skipMutable = True
+        else:
+            self.skipSubScript = True
 
     def exitAssign(self, node):
         if type(node.left) is Expression.Mutable:
             symbol = self.symbolTable.getSymbol(node.left.name)
             self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
         else:
-            # TODO: SubScript
-            pass
+            # note address of index is already on stack
+            self.file.write("sto " + self.getPType(self.symbolTable.getSymbol(node.left.mutable.name).type) + "\n")
 
     def exitBinOp(self, node):
         # Arithmetic

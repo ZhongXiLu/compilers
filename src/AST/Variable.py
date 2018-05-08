@@ -76,9 +76,9 @@ class ArrayInitialize(ASTNode):
 
 class ArrayInitializeList(ASTNode):
 
-    def __init__(self, lineNr, positionNr, inititializeList=[]):
+    def __init__(self, lineNr, positionNr, initializeList=[]):
         super().__init__(lineNr, positionNr)
-        self.list = inititializeList    # list of Expression nodes
+        self.list = initializeList    # list of Expression nodes
 
     def visit(self, visitorObject):
         return visitorObject("ArrayInitializeList", [init.visit(visitorObject) for init in self.list])
