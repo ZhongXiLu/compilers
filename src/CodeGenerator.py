@@ -11,14 +11,15 @@ class CodeGenerator(ASTListener):
 
     def __init__(self, symbolTable, file="p_prog.p"):
         self.symbolTable = symbolTable
-        self.nextFreeAddress = 5        # = environment
+        self.nextFreeAddress = 5        # = environment (5 reserved registers)
         self.labelId = 0
 
         # Temporary variables
-        self.endLabel = None        # temporary store label names to use for later
-        self.elseLabel = None
-        self.startLabel = None
-        self.isAssignee = False     # small hack to make sure mutables arent printed on lhs
+        self.ifEndLabel = []            # temporary store label names to use for later (= stack)
+        self.elseLabel = []
+        self.whileStartLabel = []
+        self.whileEndLabel = []
+        self.isAssignee = False         # small hack to make sure mutables arent printed on lhs
 
         self.file = open(file, "w")
 
@@ -50,6 +51,11 @@ class CodeGenerator(ASTListener):
     def exitProgram(self, node):
         self.file.write("hlt\n")
         self.file.close()
+
+        print(self.ifEndLabel)
+        print(self.elseLabel)
+        print(self.whileEndLabel)
+        print(self.whileStartLabel)
 
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
 
@@ -155,29 +161,32 @@ class CodeGenerator(ASTListener):
     def enterIfBranch(self, node):
         # Make sure expression is evaluated first
         if node.elseBody is None:
-            self.endLabel = self.getFreeLabel()
-            self.file.write("fjp " + self.endLabel + "\n")      # jump to end
+            self.ifEndLabel.append(self.getFreeLabel())
+            self.file.write("fjp " + self.ifEndLabel[-1] + "\n")        # jump to end
         else:
-            self.elseLabel = self.getFreeLabel()
-            self.file.write("fjp " + self.elseLabel + "\n")     # jump to else branch
+            self.elseLabel.append(self.getFreeLabel())
+            self.file.write("fjp " + self.elseLabel[-1] + "\n")         # jump to else branch
 
     def enterElseBranch(self, node):
-        self.endLabel = self.getFreeLabel()
-        self.file.write("ujp " + self.endLabel + "\n")      # end of if branch -> jump to end
-        self.file.write(self.elseLabel + ":" + "\n")        # mark start of else branch
+        self.ifEndLabel.append(self.getFreeLabel())
+        self.file.write("ujp " + self.ifEndLabel[-1] + "\n")            # end of if branch -> jump to end
+        self.file.write(self.elseLabel.pop() + ":" + "\n")              # mark start of else branch
 
     def exitIf(self, node):
-        self.file.write(self.endLabel + ":" + "\n")
+        self.file.write(self.ifEndLabel.pop() + ":" + "\n")
 
     def enterWhile(self, node):
-        self.startLabel = self.getFreeLabel()
-        self.file.write(self.startLabel + ":" + "\n")
+        self.whileStartLabel.append(self.getFreeLabel())
+        self.file.write(self.whileStartLabel[-1] + ":" + "\n")
 
     def enterWhileBranch(self, node):
         # Make sure expression is evaluated first
-        self.endLabel = self.getFreeLabel()
-        self.file.write("fjp " + self.endLabel + "\n")      # jump to end
+        self.whileEndLabel.append(self.getFreeLabel())
+        self.file.write("fjp " + self.whileEndLabel[-1] + "\n")         # jump to end
 
     def exitWhile(self, node):
-        self.file.write("ujp " + self.startLabel + "\n")    # end of while branch -> jump to start
-        self.file.write(self.endLabel + ":" + "\n")
+        self.file.write("ujp " + self.whileStartLabel.pop() + "\n")     # end of while branch -> jump to start
+        self.file.write(self.whileEndLabel.pop() + ":" + "\n")
+
+    def exitBreak(self, node):
+        self.file.write("ujp " + self.whileEndLabel[-1] + "\n")     # jump to end
