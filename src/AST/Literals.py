@@ -4,12 +4,12 @@ from AST.ASTNode import ASTNode
 
 class Int(ASTNode):
 
-    def __init__(self, lineNr, positionNr, _int):
+    def __init__(self, lineNr, positionNr, value):
         super().__init__(lineNr, positionNr)
-        self._int = _int
+        self.value = value
 
     def visit(self, visitorObject):
-        return visitorObject(self._int, [])
+        return visitorObject(self.value, [])
 
     def accept(self, listener):
         listener.enterInt(self)
@@ -18,12 +18,12 @@ class Int(ASTNode):
 
 class Double(ASTNode):
 
-    def __init__(self, lineNr, positionNr, double):
+    def __init__(self, lineNr, positionNr, value):
         super().__init__(lineNr, positionNr)
-        self.double = double
+        self.value = value
 
     def visit(self, visitorObject):
-        return visitorObject(self.double, [])
+        return visitorObject(self.value, [])
 
     def accept(self, listener):
         listener.enterDouble(self)
@@ -32,12 +32,12 @@ class Double(ASTNode):
 
 class String(ASTNode):
 
-    def __init__(self, lineNr, positionNr, string):
+    def __init__(self, lineNr, positionNr, value):
         super().__init__(lineNr, positionNr)
-        self.string = string
+        self.value = value
 
     def visit(self, visitorObject):
-        return visitorObject(self.string, [])
+        return visitorObject(self.value, [])
 
     def accept(self, listener):
         listener.enterString(self)
@@ -46,12 +46,12 @@ class String(ASTNode):
 
 class Char(ASTNode):
 
-    def __init__(self, lineNr, positionNr, char):
+    def __init__(self, lineNr, positionNr, value):
         super().__init__(lineNr, positionNr)
-        self.char = char
+        self.value = value
 
     def visit(self, visitorObject):
-        return visitorObject(self.char, [])
+        return visitorObject(self.value, [])
 
     def accept(self, listener):
         listener.enterChar(self)

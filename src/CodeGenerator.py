@@ -21,6 +21,7 @@ class CodeGenerator(ASTListener):
         self.whileEndLabel = []
         self.skipMutable = False         # small hack to make sure mutables arent printed on lhs
         self.skipSubScript = False
+        self.skipAll = False
 
         self.file = open(file, "w")
 
@@ -112,7 +113,7 @@ class CodeGenerator(ASTListener):
             self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address + int(node.size) - i - 1) + "\n")
 
     def enterMutable(self, node):
-        if not self.skipMutable:
+        if not self.skipMutable and not self.skipAll:
             symbol = self.symbolTable.getSymbol(node.name)
             self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
         else:
@@ -126,22 +127,64 @@ class CodeGenerator(ASTListener):
     def exitSubScript(self, node):
         # expression (on the stack) is the index of the accessed array
         self.file.write("ixa " + str(1) + "\n")     # we only allow one dimensional arrays
-        if not self.skipSubScript:
+        if not self.skipSubScript and not self.skipAll:
             self.file.write("ind " + self.getPType(self.symbolTable.getSymbol(node.mutable.name).type) + "\n")
         else:
             self.skipSubScript = False
 
+    def enterCall(self, node):
+        if node.funcName == "scanf" or node.funcName == "printf":
+            self.skipAll = True
+
+    def exitCall(self, node):
+        if node.funcName == "scanf":
+            self.skipAll = False
+            if node.args[0].value == "\"%c\"":
+                self.file.write("in c\n")
+            elif node.args[0].value == "\"%s\"":
+                self.file.write("in c\n")     # TODO
+            elif node.args[0].value == "\"%i\"":
+                self.file.write("in i\n")
+            elif node.args[0].value == "\"%d":
+                self.file.write("in r\n")
+            else:
+                print(node.args[0].string)
+                raise Exception(node.getPosition() + ": Only following type codes are supported: c, s, i, d")
+
+            # Write scanned result to variable
+            if type(node.args[1]) is Expression.Mutable:
+                self.skipMutable = True
+                symbol = self.symbolTable.getSymbol(node.args[1].name)
+                self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+            elif type(node.args[1]) is Expression.SubScript:
+                # TODO: does not work yet
+                self.skipSubScript = True
+                symbol = self.symbolTable.getSymbol(node.args[1].mutable.name)
+                self.file.write("sto " + self.getPType(symbol.type) + "\n")
+            else:
+                raise Exception(node.getPosition() + ": Segmentation Fault")
+
+        elif node.funcName == "printf":
+            self.skipAll = False
+            pass
+        else:
+            pass
+
     def enterInt(self, node):
-        self.file.write("ldc i " + str(node._int) + "\n")
+        if not self.skipAll:
+            self.file.write("ldc i " + str(node.value) + "\n")
 
     def enterDouble(self, node):
-        self.file.write("ldc r " + str(node.double) + "\n")
+        if not self.skipAll:
+            self.file.write("ldc r " + str(node.value) + "\n")
 
     def enterString(self, node):
-        self.file.write("ldc c " + str(node.string) + "\n")
+        if not self.skipAll:
+            self.file.write("ldc c " + str(node.value) + "\n")
 
     def enterChar(self, node):
-        self.file.write("ldc c " + str(node.char) + "\n")
+        if not self.skipAll:
+            self.file.write("ldc c " + str(node.value) + "\n")
 
     def enterAssign(self, node):
         if type(node.left) is Expression.Mutable:
