@@ -242,7 +242,7 @@ def getType(expression,expectedType,symbolTable):
                     return getType(expression.left, expectedType, symbolTable)
                 else:
                     return ["double", expression.right.getPosition()]
-            if type(expression.right) is Literals.String or assigneeType == "string":
+            if type(expression.right) is Literals.String or assigneeType == "string" or Literals.Char or assigneeType=="char":
                 if expectedType == "char":
                     return getType(expression.left, expectedType, symbolTable)
                 else:
