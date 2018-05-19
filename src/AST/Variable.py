@@ -42,14 +42,14 @@ class VarDeclInitialize(ASTNode):
         self.expression = expression    # Expression node
 
     def visit(self, visitorObject):
-        if self.expression != None:
+        if self.expression is not None:
             return visitorObject("=", [self.name, self.expression.visit(visitorObject)])
         else:
             return visitorObject(self.name, [])
 
     def accept(self, listener):
         listener.enterVarDeclInitialize(self)
-        if self.expression != None:
+        if self.expression is not None:
             self.expression.accept(listener)
         listener.exitVarDeclInitialize(self)
 

@@ -80,6 +80,9 @@ class CodeGenerator(ASTListener):
         # Initialize variable with default value
         self.symbolTable.getSymbol(node.name).address = self.getFreeAddress()
         if self.getPType(self.symbolTable.getSymbol(node.name).type) == "c":
+            # Check if we have to store a string, if so, allocate memory for it (one char = one address)
+            if self.symbolTable.getSymbol(node.name).type == "char*":
+                self.nextFreeAddress = self.symbolTable.getSymbol(node.name).address + len(node.expression.value)
             self.file.write("ldc c ' '\n")
         elif self.getPType(self.symbolTable.getSymbol(node.name).type) == "r":
             self.file.write("ldc r 0.0\n")
@@ -180,7 +183,8 @@ class CodeGenerator(ASTListener):
 
     def enterString(self, node):
         if not self.skipAll:
-            self.file.write("ldc c " + str(node.value) + "\n")
+            for char in node.value:
+                self.file.write("ldc c " + str(char) + "\n")
 
     def enterChar(self, node):
         if not self.skipAll:
