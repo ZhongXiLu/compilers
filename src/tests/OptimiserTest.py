@@ -1,0 +1,74 @@
+import sys
+import os
+sys.path.append("..")
+
+import unittest
+from antlr4 import *
+from CLexer import CLexer
+from CParser import CParser
+from ASTBuilder import ASTBuilder
+from SemanticValidator import SemanticValidator
+from Optimiser import Optimiser
+from AST import Expression, Function, Literals, Program, Statement, Variable
+from copy import deepcopy
+
+
+class OptimiserTestCase(unittest.TestCase):
+
+    def semanticAnalyse(self, file):
+        lexer = CLexer(FileStream(os.path.dirname(os.path.abspath(__file__)) + "/" + file))
+        stream = CommonTokenStream(lexer)
+        parser = CParser(stream)
+        tree = parser.prog()
+
+        astBuilder = ASTBuilder()
+        AST = astBuilder.visit(tree)
+        oldAST = deepcopy(AST)
+
+        semanticValidator = SemanticValidator()
+        AST.accept(semanticValidator)
+
+        optimiser = Optimiser(semanticValidator.symbolTable)
+        AST.accept(optimiser)
+
+        return oldAST, AST
+
+    def test_unusedVar(self):
+        oldAST, AST = self.semanticAnalyse("data/Optimiser/UnusedVar.c")
+
+        hasVar = False
+        for decl in oldAST.declarationList.declarations[0].body.localDecls:     # Search in main function
+            if type(decl) is Variable.VariableDecl:
+                hasVar = True
+        self.assertTrue(hasVar)
+
+        hasVar = False
+        for decl in AST.declarationList.declarations[0].body.localDecls:     # Search in main function
+            if type(decl) is Variable.VariableDecl:
+                hasVar = True
+        self.assertFalse(hasVar)
+
+    def test_unusedFunction(self):
+        oldAST, AST = self.semanticAnalyse("data/Optimiser/UnusedFunction.c")
+
+        # Two function decls: main() and f()
+        self.assertEqual(len(oldAST.declarationList.declarations), 2)
+
+        # Only one function decl: main()
+        self.assertEqual(len(AST.declarationList.declarations), 1)
+
+    def test_unreachableReturn(self):
+        oldAST, AST = self.semanticAnalyse("data/Optimiser/UnreachableReturn.c")
+
+        self.assertEqual(len(oldAST.declarationList.declarations[0].body.statements), 2)
+        self.assertEqual(len(AST.declarationList.declarations[0].body.statements), 1)
+
+    def test_unreachableBreak(self):
+        oldAST, AST = self.semanticAnalyse("data/Optimiser/UnreachableBreak.c")
+
+        self.assertEqual(len(oldAST.declarationList.declarations[0].body.statements[0].body.statements), 2)
+        self.assertEqual(len(AST.declarationList.declarations[0].body.statements[0].body.statements), 1)
+
+
+if __name__ == '__main__':
+    unittest.main()
