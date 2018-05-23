@@ -46,8 +46,6 @@ class CodeGenerator(ASTListener):
     def enterProgram(self, node):
         self.symbolTable.reset()
         self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
-        self.file.write("ssp 5\n")
-        # TODO: ...
         self.file.write("ujp main\n")
 
     def exitProgram(self, node):
@@ -65,13 +63,9 @@ class CodeGenerator(ASTListener):
     def enterFunctionDef(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
 
-        if node.name != "main":
-            self.file.write("spp " + str(len(node.params.params)) + "\n")   # TODO: correct?
-            # TODO: ...
-            self.file.write("ujp " + node.name + "\n")
-
-    def enterFunctionBody(self, node):
         self.file.write(node.name + ":" + "\n")
+        self.file.write("ssp " + str(len(node.params.params) + 5) + "\n")
+        # self.file.write("sep " + i + "\n")    # TODO: set extreme pointer
 
     def exitFunctionDef(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
@@ -138,6 +132,8 @@ class CodeGenerator(ASTListener):
     def enterCall(self, node):
         if node.funcName == "scanf" or node.funcName == "printf":
             self.skipAll = True
+        else:
+            self.file.write("mst 0\n")  # TODO: check for recursion
 
     def exitCall(self, node):
         if node.funcName == "scanf":
@@ -171,7 +167,7 @@ class CodeGenerator(ASTListener):
             self.skipAll = False
             pass
         else:
-            pass
+            self.file.write("cup " + str(len(node.args)) + " " + node.funcName + "\n")
 
     def enterInt(self, node):
         if not self.skipAll:
@@ -270,6 +266,8 @@ class CodeGenerator(ASTListener):
 
     def exitReturn(self, node):
         if node.expression is not None:
+            # TODO: check for recursion
+            self.file.write("str " + self.getPType(getType(node.expression, "", self.symbolTable)[0]) + " 0 0\n")
             self.file.write("retf\n")  # result in local stack
         else:
             self.file.write("retp\n")
