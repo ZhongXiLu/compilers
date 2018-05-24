@@ -11,7 +11,7 @@ class CodeGenerator(ASTListener):
 
     def __init__(self, symbolTable, file="p_prog.p"):
         self.symbolTable = symbolTable
-        self.nextFreeAddress = 5        # = environment (5 reserved registers)
+        self.nextFreeAddress = [5]      # stack = environment (5 reserved registers)
         self.labelId = 0
 
         # Temporary variables
@@ -27,8 +27,8 @@ class CodeGenerator(ASTListener):
 
 
     def getFreeAddress(self):
-        self.nextFreeAddress += 1
-        return self.nextFreeAddress - 1
+        self.nextFreeAddress[-1] += 1
+        return self.nextFreeAddress[-1] - 1
 
     def getFreeLabel(self):
         self.labelId += 1
@@ -46,22 +46,25 @@ class CodeGenerator(ASTListener):
     def enterProgram(self, node):
         self.symbolTable.reset()
         self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
-        self.file.write("ujp main\n")
+        self.file.write("mst 0\n")
+        self.file.write("cup 0 main\n")
+        self.file.write("hlt\n")
 
     def exitProgram(self, node):
-        self.file.write("hlt\n")
-        self.file.close()
-
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
+        self.file.close()
 
     def enterCompound(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
+        self.nextFreeAddress.append(self.nextFreeAddress[-1])
 
     def exitCompound(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
+        self.nextFreeAddress.pop()
 
     def enterFunctionDef(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.getNextScope()
+        self.nextFreeAddress.append(5)
 
         self.file.write(node.name + ":" + "\n")
         self.file.write("ssp " + str(len(node.params.params) + 5) + "\n")
@@ -69,18 +72,21 @@ class CodeGenerator(ASTListener):
         # self.file.write("sep " + i + "\n")
 
         # Update the addresses of the parameters
-        address = 0
         for param in node.params.params:
             if param.size is None:
                 # only need one register
-                self.symbolTable.getSymbol(param.name).address = 5 + address
-                address += 1
+                self.symbolTable.getSymbol(param.name).address = self.getFreeAddress()
             else:
-                self.symbolTable.getSymbol(param.name).address = 5 + address
-                address += param.size
+                self.symbolTable.getSymbol(param.name).address = self.getFreeAddress()
+                self.nextFreeAddress[-1] += param.size
 
     def exitFunctionDef(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
+        self.nextFreeAddress.pop()
+
+        # Check if the function is a void function, if so, create an explicit return instruction to mark the end
+        if node.returns == "void":
+            self.file.write("retp\n")
 
     def enterVarDeclInitialize(self, node):
         # Initialize variable with default value
@@ -88,7 +94,7 @@ class CodeGenerator(ASTListener):
         if self.getPType(self.symbolTable.getSymbol(node.name).type) == "c":
             # Check if we have to store a string, if so, allocate memory for it (one char = one address)
             if self.symbolTable.getSymbol(node.name).type == "char*":
-                self.nextFreeAddress = self.symbolTable.getSymbol(node.name).address + len(node.expression.value)
+                self.nextFreeAddress[-1] = self.symbolTable.getSymbol(node.name).address + len(node.expression.value)
             self.file.write("ldc c ' '\n")
         elif self.getPType(self.symbolTable.getSymbol(node.name).type) == "r":
             self.file.write("ldc r 0.0\n")
@@ -100,13 +106,14 @@ class CodeGenerator(ASTListener):
         if node.expression is not None:
             # => top of stack is result of expression (= initialized value)
             symbol = self.symbolTable.getSymbol(node.name)
-            self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+            # TODO: recursion
+            self.file.write("str " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
 
     def enterArrayInitialize(self, node):
         # Initialize array with default values
         freeAddress = self.getFreeAddress()
         self.symbolTable.getSymbol(node.name).address = freeAddress
-        self.nextFreeAddress = freeAddress + int(node.size)
+        self.nextFreeAddress[-1] = freeAddress + int(node.size)
 
         for i in range(int(node.size)):
             if self.getPType(self.symbolTable.getSymbol(node.name).type) == "c":
@@ -119,7 +126,8 @@ class CodeGenerator(ASTListener):
     def exitArrayInitialize(self, node):
         symbol = self.symbolTable.getSymbol(node.name)
         for i in range(len(node.initialize.list)):
-            self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address + int(node.size) - i - 1) + "\n")
+            # TODO: recursion
+            self.file.write("str " + self.getPType(symbol.type) + " 0 " + str(symbol.address + int(node.size) - i - 1) + "\n")
 
     def enterMutable(self, node):
         if not self.skipMutable and not self.skipAll:
@@ -167,7 +175,8 @@ class CodeGenerator(ASTListener):
             if type(node.args[1]) is Expression.Mutable:
                 self.skipMutable = True
                 symbol = self.symbolTable.getSymbol(node.args[1].name)
-                self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+                # TODO: recursion
+                self.file.write("str " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
             elif type(node.args[1]) is Expression.SubScript:
                 # TODO: does not work yet
                 self.skipSubScript = True
@@ -208,7 +217,8 @@ class CodeGenerator(ASTListener):
     def exitAssign(self, node):
         if type(node.left) is Expression.Mutable:
             symbol = self.symbolTable.getSymbol(node.left.name)
-            self.file.write("sro " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+            # TODO: recursion
+            self.file.write("str " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
         else:
             # note address of index is already on stack
             self.file.write("sto " + self.getPType(self.symbolTable.getSymbol(node.left.mutable.name).type) + "\n")
