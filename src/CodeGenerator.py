@@ -65,7 +65,19 @@ class CodeGenerator(ASTListener):
 
         self.file.write(node.name + ":" + "\n")
         self.file.write("ssp " + str(len(node.params.params) + 5) + "\n")
-        # self.file.write("sep " + i + "\n")    # TODO: set extreme pointer
+        # Note: we dont have to set the extreme pointer, since we dont allow dynamic memory allocation
+        # self.file.write("sep " + i + "\n")
+
+        # Update the addresses of the parameters
+        address = 0
+        for param in node.params.params:
+            if param.size is None:
+                # only need one register
+                self.symbolTable.getSymbol(param.name).address = 5 + address
+                address += 1
+            else:
+                self.symbolTable.getSymbol(param.name).address = 5 + address
+                address += param.size
 
     def exitFunctionDef(self, node):
         self.symbolTable.currentScope = self.symbolTable.currentScope.parent
@@ -112,7 +124,8 @@ class CodeGenerator(ASTListener):
     def enterMutable(self, node):
         if not self.skipMutable and not self.skipAll:
             symbol = self.symbolTable.getSymbol(node.name)
-            self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+            # self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+            self.file.write("lod " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
         else:
             self.skipMutable = False
 
