@@ -94,7 +94,7 @@ class CodeGenerator(ASTListener):
         self.symbolTable.getSymbol(node.name).address = self.getFreeAddress()
         if self.getPType(self.symbolTable.getSymbol(node.name).type) == "c":
             # Check if we have to store a string, if so, allocate memory for it (one char = one address)
-            if self.symbolTable.getSymbol(node.name).type == "char*":
+            if self.symbolTable.getSymbol(node.name).type == "char*":       # TODO: check for char array and not char*
                 self.nextFreeAddress[-1] = self.symbolTable.getSymbol(node.name).address + len(node.expression.value)
             self.file.write("ldc c ' '\n")
         elif self.getPType(self.symbolTable.getSymbol(node.name).type) == "r":
