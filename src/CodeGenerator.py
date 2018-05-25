@@ -22,6 +22,7 @@ class CodeGenerator(ASTListener):
         self.skipMutable = False         # small hack to make sure mutables arent printed on lhs
         self.skipSubScript = False
         self.skipAll = False
+        self.skipFirst = False
 
         self.file = open(file, "w")
 
@@ -135,7 +136,8 @@ class CodeGenerator(ASTListener):
             # self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
             self.file.write("lod " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
         else:
-            self.skipMutable = False
+            if self.skipMutable:
+                self.skipMutable = False
 
     def enterSubScript(self, node):
         # Load the start address of the array
@@ -151,8 +153,18 @@ class CodeGenerator(ASTListener):
             self.skipSubScript = False
 
     def enterCall(self, node):
-        if node.funcName == "scanf" or node.funcName == "printf":
+        if node.funcName == "scanf":
             self.skipAll = True
+        elif node.funcName == "printf":
+            self.skipFirst = True
+            string = node.args.pop(0)
+            node.args.reverse()             # small hack to reverse the order of the arguments on the stack
+            for index, arg in enumerate(node.args):
+                # make sure the quotes arent put on stack and the string are reversed too
+                if type(arg) == Literals.String:
+                    arg.value = arg.value[1:-1]
+                    arg.value = arg.value[::-1]
+            node.args.insert(0, string)     # make sure the string stays at the first place
         else:
             self.file.write("mst 0\n")  # TODO: check for recursion
 
@@ -165,15 +177,14 @@ class CodeGenerator(ASTListener):
                 self.file.write("in c\n")     # TODO
             elif node.args[0].value == "\"%i\"":
                 self.file.write("in i\n")
-            elif node.args[0].value == "\"%d":
+            elif node.args[0].value == "\"%d\"":
                 self.file.write("in r\n")
             else:
-                print(node.args[0].string)
                 raise Exception(node.getPosition() + ": Only following type codes are supported: c, s, i, d")
 
             # Write scanned result to variable
             if type(node.args[1]) is Expression.Mutable:
-                self.skipMutable = True
+                # self.skipMutable = True
                 symbol = self.symbolTable.getSymbol(node.args[1].name)
                 # TODO: recursion
                 self.file.write("str " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
@@ -186,8 +197,36 @@ class CodeGenerator(ASTListener):
                 raise Exception(node.getPosition() + ": Segmentation Fault")
 
         elif node.funcName == "printf":
-            self.skipAll = False
-            pass
+            self.skipFirst = False
+
+            string = node.args[0].value
+            index = 1   # dont print the surrounding quotes
+            paramCount = len(node.args)-1  # indicates at which param we are (note that the args are reversed)
+            while index < len(string) - 1:
+                if index != 0 and index != len(string)-1:
+                    if string[index] == "%":
+                        if string[index+1] == "c":
+                            self.file.write("out c\n")
+
+                        # TODO: strings only work as literals now
+                        elif string[index+1] == "s":
+                            # print all characters of string (exclusive the quotes)
+                            for i in range(len(node.args[paramCount].value)):
+                                self.file.write("out c\n")
+                        elif string[index+1] == "i":
+                            self.file.write("out i\n")
+                        elif string[index+1] == "d":
+                            self.file.write("out r\n")
+                        else:
+                            raise Exception(
+                                node.getPosition() + ": Only following type codes are supported: c, s, i, d")
+                        paramCount -= 1
+                        index += 1
+                    else:
+                        self.file.write("ldc c '" + str(string[index]) + "'\n")
+                        self.file.write("out c\n")
+                index += 1
+
         else:
             self.file.write("cup " + str(len(node.args)) + " " + node.funcName + "\n")
 
@@ -200,9 +239,11 @@ class CodeGenerator(ASTListener):
             self.file.write("ldc r " + str(node.value) + "\n")
 
     def enterString(self, node):
-        if not self.skipAll:
+        if not self.skipAll and not self.skipFirst:
             for char in node.value:
-                self.file.write("ldc c " + str(char) + "\n")
+                self.file.write("ldc c '" + str(char) + "'\n")
+        else:
+            self.skipFirst = False
 
     def enterChar(self, node):
         if not self.skipAll:
