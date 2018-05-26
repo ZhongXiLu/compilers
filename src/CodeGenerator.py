@@ -8,8 +8,6 @@ from SemanticValidator import SemanticValidator, getType
 
 class CodeGenerator(ASTListener):
 
-    # TODO: free variables after endScope?
-
     def __init__(self, symbolTable, file="p_prog.p"):
         self.symbolTable = symbolTable
         self.nextFreeAddress = [5]      # stack = environment (5 reserved registers)
@@ -25,6 +23,7 @@ class CodeGenerator(ASTListener):
         self.scanf = False
         self.printf = False
         self.skipFirst = False
+        self.arrayIndex = False
 
         self.file = open(file, "w")
 
@@ -96,7 +95,7 @@ class CodeGenerator(ASTListener):
         self.symbolTable.getSymbol(node.name).address = self.getFreeAddress()
         if self.getPType(self.symbolTable.getSymbol(node.name).type) == "c":
             # Check if we have to store a string, if so, allocate memory for it (one char = one address)
-            if self.symbolTable.getSymbol(node.name).type == "char*":       # TODO: check for char array and not char*
+            if self.symbolTable.getSymbol(node.name).type == "char*":
                 self.nextFreeAddress[-1] = self.symbolTable.getSymbol(node.name).address + len(node.expression.value)
             self.file.write("ldc c ' '\n")
         elif self.getPType(self.symbolTable.getSymbol(node.name).type) == "r":
@@ -152,8 +151,10 @@ class CodeGenerator(ASTListener):
         # Load the start address of the array
         self.file.write("ldc a " + str(self.symbolTable.getSymbol(node.mutable.name).address) + "\n")
         self.skipMutable = True
+        self.arrayIndex = True
 
     def exitSubScript(self, node):
+        self.arrayIndex = False
         # expression (on the stack) is the index of the accessed array
         self.file.write("ixa " + str(1) + "\n")     # we only allow one dimensional arrays
         if not self.skipSubScript and not self.scanf:
@@ -199,8 +200,6 @@ class CodeGenerator(ASTListener):
                 # TODO: recursion
                 self.file.write("str " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
             elif type(node.args[1]) is Expression.SubScript:
-                # TODO: does not work yet
-                self.skipSubScript = True
                 symbol = self.symbolTable.getSymbol(node.args[1].mutable.name)
                 self.file.write("sto " + self.getPType(symbol.type) + "\n")
             else:
@@ -219,7 +218,6 @@ class CodeGenerator(ASTListener):
                         if string[index+1] == "c":
                             self.file.write("out c\n")
 
-                        # TODO: strings only work as literals now
                         elif string[index+1] == "s":
                             if type(node.args[paramCount]) is Literals.String:
                                 # print all characters of string (exclusive the quotes)
@@ -246,7 +244,7 @@ class CodeGenerator(ASTListener):
             self.file.write("cup " + str(len(node.args)) + " " + node.funcName + "\n")
 
     def enterInt(self, node):
-        if not self.scanf:
+        if not self.scanf or self.arrayIndex:
             self.file.write("ldc i " + str(node.value) + "\n")
 
     def enterDouble(self, node):
