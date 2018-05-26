@@ -44,6 +44,11 @@ def main(argv):
     optimiser = Optimiser(semanticValidator.symbolTable)
     AST.accept(optimiser)
 
+    # Print warnings, if any
+    if optimiser.warnings:
+        for warning in optimiser.warnings:
+            print("WARNING: " + warning)
+
     # Visualise AST
     dotGraph = AST.visit(DotGraphBuilder)
     dotGraph.render("output/ast.gv", view=False)

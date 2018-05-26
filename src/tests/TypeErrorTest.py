@@ -50,8 +50,6 @@ class TypeErrorTestCase(unittest.TestCase):
         errors = self.semanticAnalyse("data/TypeErrors/IntPlusString.c")
         self.assertEqual(errors[0], "Line 6 at 14: Type mismatch for 'a': expected 'int' but found 'string'")
 
-    # TODO: support "double" + "int"?
-
     def test_wrongNestedExpressions(self):
         errors = self.semanticAnalyse("data/TypeErrors/WrongNestedExpressions.c")
         self.assertEqual(errors[0], "Line 9 at 17: Type mismatch for 'a': expected 'int' but found 'char'")

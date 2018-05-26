@@ -8,6 +8,7 @@ class Optimiser(ASTListener):
 
     def __init__(self, symbolTable):
         self.symbolTable = symbolTable
+        self.warnings = []
 
     def enterProgram(self, node):
         self.symbolTable.reset()
@@ -22,6 +23,7 @@ class Optimiser(ASTListener):
                 # Note: main function is exception
                 if node.declarationList.declarations[i].name != "main" and \
                         not self.symbolTable.getSymbol(node.declarationList.declarations[i].name).used:
+                    self.warnings.append(node.getPosition() + ": Unused function '" + node.declarationList.declarations[i].name + "'")
                     del node.declarationList.declarations[i]
                     del self.symbolTable.currentScope.children[i]   # also delete the scope
                     i -= 1
@@ -33,12 +35,16 @@ class Optimiser(ASTListener):
         # Check for unreachable code
         for i in range(len(node.statements)):
             if type(node.statements[i]) is Statement.Return:
+                if i < len(node.statements)-1:
+                    self.warnings.append(node.getPosition() + ": Unreachable code after return")
                 del node.statements[i + 1:]
                 return True
 
             # Check if there's a return in the compound state
             elif type(node.statements[i]) is Statement.Compound:
                 if self.returnInCompund(node.statements[i]):
+                    if i < len(node.statements) - 1:
+                        self.warnings.append(node.getPosition() + ": Unreachable code after return")
                     del node.statements[i + 1:]
                     return True
 
@@ -56,6 +62,8 @@ class Optimiser(ASTListener):
                         returns += 1
 
                     if returns == 2:
+                        if i < len(node.statements) - 1:
+                            self.warnings.append(node.getPosition() + ": Unreachable code after return")
                         del node.statements[i + 1:]
                         return True
 
@@ -83,6 +91,7 @@ class Optimiser(ASTListener):
         if type(node.body) is Statement.Compound:
             for i in range(len(node.body.statements)):
                 if type(node.body.statements[i]) is Statement.Break:
+                    self.warnings.append(node.getPosition() + ": Unreachable code after break")
                     del node.body.statements[i + 1:]
                     break
         # Still need to check for break's inside other statements..., no easy way to do it...
@@ -101,6 +110,7 @@ class Optimiser(ASTListener):
             if type(node.declInitializeList[i]) is Variable.VarDeclInitialize or \
                     type(node.declInitializeList[i]) is Variable.ArrayInitialize:
                 if not self.symbolTable.getSymbol(node.declInitializeList[i].name).used:
+                    self.warnings.append(node.getPosition() + ": Unused variable '" + node.declInitializeList[i].name + "'")
                     del node.declInitializeList[i]
                     i -= 1
             i += 1

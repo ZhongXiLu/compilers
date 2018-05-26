@@ -31,10 +31,11 @@ class OptimiserTestCase(unittest.TestCase):
         optimiser = Optimiser(semanticValidator.symbolTable)
         AST.accept(optimiser)
 
-        return oldAST, AST
+        return optimiser.warnings, oldAST, AST
 
     def test_unusedVar(self):
-        oldAST, AST = self.semanticAnalyse("data/Optimiser/UnusedVar.c")
+        warnings, oldAST, AST = self.semanticAnalyse("data/Optimiser/UnusedVar.c")
+        self.assertEqual(warnings[0], "Line 6 at 5: Unused variable 'a'")
 
         hasVar = False
         for decl in oldAST.declarationList.declarations[0].body.localDecls:     # Search in main function
@@ -49,7 +50,8 @@ class OptimiserTestCase(unittest.TestCase):
         self.assertFalse(hasVar)
 
     def test_unusedFunction(self):
-        oldAST, AST = self.semanticAnalyse("data/Optimiser/UnusedFunction.c")
+        warnings, oldAST, AST = self.semanticAnalyse("data/Optimiser/UnusedFunction.c")
+        self.assertEqual(warnings[0], "Line 2 at 1: Unused function 'f'")
 
         # Two function decls: main() and f()
         self.assertEqual(len(oldAST.declarationList.declarations), 2)
@@ -58,21 +60,24 @@ class OptimiserTestCase(unittest.TestCase):
         self.assertEqual(len(AST.declarationList.declarations), 1)
 
     def test_unreachableReturn(self):
-        oldAST, AST = self.semanticAnalyse("data/Optimiser/UnreachableReturn.c")
+        warnings, oldAST, AST = self.semanticAnalyse("data/Optimiser/UnreachableReturn.c")
+        self.assertEqual(warnings[0], "Line 5 at 1: Unreachable code after return")
 
         # Check the nr of statements in the main function before and after
         self.assertEqual(len(oldAST.declarationList.declarations[0].body.statements), 2)
         self.assertEqual(len(AST.declarationList.declarations[0].body.statements), 1)
 
     def test_unreachableBreak(self):
-        oldAST, AST = self.semanticAnalyse("data/Optimiser/UnreachableBreak.c")
+        warnings, oldAST, AST = self.semanticAnalyse("data/Optimiser/UnreachableBreak.c")
+        self.assertEqual(warnings[0], "Line 7 at 5: Unreachable code after break")
 
         # Check the nr of statements in the while loop before and after
         self.assertEqual(len(oldAST.declarationList.declarations[0].body.statements[0].body.statements), 2)
         self.assertEqual(len(AST.declarationList.declarations[0].body.statements[0].body.statements), 1)
 
     def test_nullSequence(self):
-        oldAST, AST = self.semanticAnalyse("data/Optimiser/NullSequence.c")
+        warnings, oldAST, AST = self.semanticAnalyse("data/Optimiser/NullSequence.c")
+        self.assertEqual(warnings[0], "TODO")
 
         self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[0].expression.right), Expression.BinOp)
         self.assertIs(type(AST.declarationList.declarations[0].body.statements[0].expression.right), Expression.Mutable)
@@ -81,7 +86,8 @@ class OptimiserTestCase(unittest.TestCase):
         self.assertIs(type(AST.declarationList.declarations[0].body.statements[1].expression.right), Expression.Mutable)
 
     def test_constantFolding(self):
-        oldAST, AST = self.semanticAnalyse("data/Optimiser/ConstantFolding.c")
+        warnings, oldAST, AST = self.semanticAnalyse("data/Optimiser/ConstantFolding.c")
+        self.assertEqual(warnings[0], "TODO")
 
         self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[0].expression.right), Expression.BinOp)
         self.assertIs(type(AST.declarationList.declarations[0].body.statements[0].expression.right), Literals.Int)
