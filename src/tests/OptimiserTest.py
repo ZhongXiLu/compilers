@@ -60,14 +60,34 @@ class OptimiserTestCase(unittest.TestCase):
     def test_unreachableReturn(self):
         oldAST, AST = self.semanticAnalyse("data/Optimiser/UnreachableReturn.c")
 
+        # Check the nr of statements in the main function before and after
         self.assertEqual(len(oldAST.declarationList.declarations[0].body.statements), 2)
         self.assertEqual(len(AST.declarationList.declarations[0].body.statements), 1)
 
     def test_unreachableBreak(self):
         oldAST, AST = self.semanticAnalyse("data/Optimiser/UnreachableBreak.c")
 
+        # Check the nr of statements in the while loop before and after
         self.assertEqual(len(oldAST.declarationList.declarations[0].body.statements[0].body.statements), 2)
         self.assertEqual(len(AST.declarationList.declarations[0].body.statements[0].body.statements), 1)
+
+    def test_nullSequence(self):
+        oldAST, AST = self.semanticAnalyse("data/Optimiser/NullSequence.c")
+
+        self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[0].expression.right), Expression.BinOp)
+        self.assertIs(type(AST.declarationList.declarations[0].body.statements[0].expression.right), Expression.Mutable)
+
+        self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[1].expression.right), Expression.BinOp)
+        self.assertIs(type(AST.declarationList.declarations[0].body.statements[1].expression.right), Expression.Mutable)
+
+    def test_constantFolding(self):
+        oldAST, AST = self.semanticAnalyse("data/Optimiser/ConstantFolding.c")
+
+        self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[0].expression.right), Expression.BinOp)
+        self.assertIs(type(AST.declarationList.declarations[0].body.statements[0].expression.right), Literals.Int)
+
+        self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[1].expression.right), Expression.BinOp)
+        self.assertIs(type(AST.declarationList.declarations[0].body.statements[1].expression.right), Literals.Int)
 
 
 if __name__ == '__main__':
