@@ -1,6 +1,7 @@
 
 from ASTListener import ASTListener
 from SymbolTable.SymbolTable import *
+from SymbolTable.SymbolInfo import *
 from AST import Expression, Function, Literals, Program, Statement, Variable
 from SemanticValidator import SemanticValidator, getType
 
@@ -21,7 +22,8 @@ class CodeGenerator(ASTListener):
         self.whileEndLabel = []
         self.skipMutable = False         # small hack to make sure mutables arent printed on lhs
         self.skipSubScript = False
-        self.skipAll = False
+        self.scanf = False
+        self.printf = False
         self.skipFirst = False
 
         self.file = open(file, "w")
@@ -131,10 +133,17 @@ class CodeGenerator(ASTListener):
             self.file.write("str " + self.getPType(symbol.type) + " 0 " + str(symbol.address + int(node.size) - i - 1) + "\n")
 
     def enterMutable(self, node):
-        if not self.skipMutable and not self.skipAll:
+        if not self.skipMutable and not self.scanf:
             symbol = self.symbolTable.getSymbol(node.name)
-            # self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
-            self.file.write("lod " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
+            if type(symbol) is ArrayInfo:
+                for i in range(int(symbol.size)):
+                    if self.printf:
+                        self.file.write("lod " + self.getPType(symbol.type) + " 0 " + str(symbol.address + int(symbol.size) - i - 1) + "\n")
+                    else:
+                        self.file.write("lod " + self.getPType(symbol.type) + " 0 " + str(symbol.address + i) + "\n")
+            else:
+                # self.file.write("ldo " + self.getPType(symbol.type) + " " + str(symbol.address) + "\n")
+                self.file.write("lod " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
         else:
             if self.skipMutable:
                 self.skipMutable = False
@@ -147,15 +156,16 @@ class CodeGenerator(ASTListener):
     def exitSubScript(self, node):
         # expression (on the stack) is the index of the accessed array
         self.file.write("ixa " + str(1) + "\n")     # we only allow one dimensional arrays
-        if not self.skipSubScript and not self.skipAll:
+        if not self.skipSubScript and not self.scanf:
             self.file.write("ind " + self.getPType(self.symbolTable.getSymbol(node.mutable.name).type) + "\n")
         else:
             self.skipSubScript = False
 
     def enterCall(self, node):
         if node.funcName == "scanf":
-            self.skipAll = True
+            self.scanf = True
         elif node.funcName == "printf":
+            self.printf = True
             self.skipFirst = True
             string = node.args.pop(0)
             node.args.reverse()             # small hack to reverse the order of the arguments on the stack
@@ -170,7 +180,7 @@ class CodeGenerator(ASTListener):
 
     def exitCall(self, node):
         if node.funcName == "scanf":
-            self.skipAll = False
+            self.scanf = False
             if node.args[0].value == "\"%c\"":
                 self.file.write("in c\n")
             elif node.args[0].value == "\"%s\"":
@@ -197,6 +207,7 @@ class CodeGenerator(ASTListener):
                 raise Exception(node.getPosition() + ": Segmentation Fault")
 
         elif node.funcName == "printf":
+            self.printf = False
             self.skipFirst = False
 
             string = node.args[0].value
@@ -210,9 +221,13 @@ class CodeGenerator(ASTListener):
 
                         # TODO: strings only work as literals now
                         elif string[index+1] == "s":
-                            # print all characters of string (exclusive the quotes)
-                            for i in range(len(node.args[paramCount].value)):
-                                self.file.write("out c\n")
+                            if type(node.args[paramCount]) is Literals.String:
+                                # print all characters of string (exclusive the quotes)
+                                for i in range(len(node.args[paramCount].value)):
+                                    self.file.write("out c\n")
+                            else:
+                                for i in range(int(self.symbolTable.getSymbol(node.args[paramCount].name).size)):
+                                    self.file.write("out c\n")
                         elif string[index+1] == "i":
                             self.file.write("out i\n")
                         elif string[index+1] == "d":
@@ -231,22 +246,22 @@ class CodeGenerator(ASTListener):
             self.file.write("cup " + str(len(node.args)) + " " + node.funcName + "\n")
 
     def enterInt(self, node):
-        if not self.skipAll:
+        if not self.scanf:
             self.file.write("ldc i " + str(node.value) + "\n")
 
     def enterDouble(self, node):
-        if not self.skipAll:
+        if not self.scanf:
             self.file.write("ldc r " + str(node.value) + "\n")
 
     def enterString(self, node):
-        if not self.skipAll and not self.skipFirst:
+        if not self.scanf and not self.skipFirst:
             for char in node.value:
                 self.file.write("ldc c '" + str(char) + "'\n")
         else:
             self.skipFirst = False
 
     def enterChar(self, node):
-        if not self.skipAll:
+        if not self.scanf:
             self.file.write("ldc c " + str(node.value) + "\n")
 
     def enterAssign(self, node):

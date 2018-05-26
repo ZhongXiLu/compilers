@@ -51,6 +51,7 @@ varDeclInitialize
 	| Id '=' simpleExpression
 	| Id '[' IntConst ']'
 	| Id '[' IntConst ']' '=' '{' arrayInitializeList '}'
+	| Id '[' IntConst ']' '=' StringConst       // for strings (e.g. char[3] = "abc")
 	;
 
 arrayInitializeList

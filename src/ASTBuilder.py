@@ -73,6 +73,15 @@ class ASTBuilder(CVisitor):
                 initializeList = Variable.ArrayInitializeList(ctx.start.line, ctx.start.column, list)
             except:
                 pass
+            try:
+                string = ctx.StringConst()
+                string = string.getText()[1:-1]
+                list = []
+                for char in string:
+                    list.append(Literals.Char(ctx.start.line, ctx.start.column, "'" + char + "'"))
+                initializeList = Variable.ArrayInitializeList(ctx.start.line, ctx.start.column, list)
+            except:
+                pass
             return Variable.ArrayInitialize(ctx.start.line, ctx.start.column, name, size, initializeList)
 
         except:
