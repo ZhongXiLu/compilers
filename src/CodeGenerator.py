@@ -199,7 +199,6 @@ class CodeGenerator(ASTListener):
                 # TODO: recursion
                 self.file.write("str " + self.getPType(symbol.type) + " 0 " + str(symbol.address) + "\n")
             elif type(node.args[1]) is Expression.SubScript:
-                # TODO: does not work yet
                 self.skipSubScript = True
                 symbol = self.symbolTable.getSymbol(node.args[1].mutable.name)
                 self.file.write("sto " + self.getPType(symbol.type) + "\n")
@@ -219,7 +218,6 @@ class CodeGenerator(ASTListener):
                         if string[index+1] == "c":
                             self.file.write("out c\n")
 
-                        # TODO: strings only work as literals now
                         elif string[index+1] == "s":
                             if type(node.args[paramCount]) is Literals.String:
                                 # print all characters of string (exclusive the quotes)
