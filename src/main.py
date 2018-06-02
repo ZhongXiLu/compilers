@@ -54,7 +54,11 @@ def main(argv):
     dotGraph.render("output/ast.gv", view=False)
 
     # Code generator
-    codeGenerator = CodeGenerator(optimiser.symbolTable)
+    codeGenerator = None
+    if 2 <= len(argv) - 1:
+        codeGenerator = CodeGenerator(optimiser.symbolTable, argv[2])
+    else:
+        codeGenerator = CodeGenerator(optimiser.symbolTable)
     AST.accept(codeGenerator)
 
 
