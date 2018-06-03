@@ -38,9 +38,19 @@ class SemanticValidator(ASTListener):
     def enterVarDeclInitialize(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.name)
         if node.expression is not None:
-            getTypeResult = getType(node.expression,symbolInfo.type, self.symbolTable)
-            if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
-                self.errors.append(getTypeResult[1] + ": Type mismatch for '" + node.name + "': expected '" + symbolInfo.type + "' but found '" + getTypeResult[0] + "'")
+            # if (node.expression is Expression.BinOp and (symbolInfo.type == "char" and not hasattr(symbolInfo,type))):
+            #     self.errors.append(
+            #         node.getPosition() + ": Type mismatch: expected '" + symbolInfo.type + "' but found 'BinOp'")
+            # else:
+            #     getTypeResult = getType(node.right, symbolInfo.type, self.symbolTable)
+            #     if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
+            #         self.errors.append(getTypeResult[1] + ": Type mismatch: expected '" + symbolInfo.type + "' but found '" +getTypeResult[0] + "'")
+            if (isinstance(node.expression,Expression.BinOp)and (symbolInfo.type == "char" and not hasattr(symbolInfo,"size"))):
+                self.errors.append(node.getPosition() + ": Type mismatch: expected '" + symbolInfo.type + "' but found 'BinOp'")
+            else:
+                getTypeResult = getType(node.expression, symbolInfo.type, self.symbolTable)
+                if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
+                    self.errors.append(getTypeResult[1] + ": Type mismatch for '" + node.name + "': expected '" + symbolInfo.type + "' but found '" +getTypeResult[0] + "'")
 
     def enterCall(self, node):
         symbolInfo = self.symbolTable.getSymbol(node.funcName)
@@ -142,9 +152,14 @@ class SemanticValidator(ASTListener):
         else:
             symbolInfo = self.symbolTable.getSymbol(node.left.name)
         if symbolInfo is not None:
-            getTypeResult = getType(node.right, symbolInfo.type,self.symbolTable)
-            if symbolInfo.type != getTypeResult[0] and getTypeResult[0] != "undefined input":
-                self.errors.append(getTypeResult[1] + ": Type mismatch: expected '" + symbolInfo.type + "' but found '" + getTypeResult[0] + "'")
+            if (isinstance(node.right,Expression.BinOp) and (symbolInfo.type == "char" and not hasattr(symbolInfo,"size"))):
+                self.errors.append(node.getPosition() + ": Type mismatch: expected '" + symbolInfo.type + "' but found 'BinOp'")
+            else:
+                getTypeResult = getType(node.right, symbolInfo.type, self.symbolTable)
+                if((symbolInfo.type == "float" or symbolInfo.type=="double") and (getTypeResult[0]!="float" and getTypeResult[0]!="double")):
+                    self.errors.append(getTypeResult[1] + ": Type mismatch: expected '" + symbolInfo.type + "' but found '" +getTypeResult[0] + "'")
+                elif ((symbolInfo.type=="int" or symbolInfo.type=="long" or symbolInfo.type=="signed" or symbolInfo.type=="unsigned")and(getTypeResult[0]!="int" and getTypeResult[0]!="long" and getTypeResult[0]!="signed" and getTypeResult[0]!="unsigned")):
+                    self.errors.append(getTypeResult[1] + ": Type mismatch: expected '" + symbolInfo.type + "' but found '" +getTypeResult[0] + "'")
 
     def enterBinOp(self, node):
         foundMismatch=False

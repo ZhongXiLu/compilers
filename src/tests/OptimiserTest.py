@@ -77,7 +77,6 @@ class OptimiserTestCase(unittest.TestCase):
 
     def test_nullSequence(self):
         warnings, oldAST, AST = self.semanticAnalyse("data/Optimiser/NullSequence.c")
-        self.assertEqual(warnings[0], "TODO")
 
         self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[0].expression.right), Expression.BinOp)
         self.assertIs(type(AST.declarationList.declarations[0].body.statements[0].expression.right), Expression.Mutable)
@@ -87,7 +86,6 @@ class OptimiserTestCase(unittest.TestCase):
 
     def test_constantFolding(self):
         warnings, oldAST, AST = self.semanticAnalyse("data/Optimiser/ConstantFolding.c")
-        self.assertEqual(warnings[0], "TODO")
 
         self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[0].expression.right), Expression.BinOp)
         self.assertIs(type(AST.declarationList.declarations[0].body.statements[0].expression.right), Literals.Int)
