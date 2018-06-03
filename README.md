@@ -23,7 +23,7 @@ Optimisation:
 How to build and compile a c file (the AST and parse tree will be saved in the `output` directory as `.gv` and `.pdf` format):
 ```commandline
 python3 build.py
-python3 src/main.cpp c_prog.c
+python3 src/c2p.py c_prog.c
 ```
 
 How to run all the tests:
