@@ -115,12 +115,13 @@ class Optimiser(ASTListener):
             i += 1
 
     def enterCall(self, node):
-        funcInfo = self.symbolTable.getSymbol(node.funcName)
-        newArguments = [None] * len(node.args)
-        for i in range (0,len(node.args)):
-            newArguments[i] = self.constantFolding(funcInfo.paramTypes[i],node.args[i])
-            newArguments[i] = self.eraseNullSequences(node.args[i])
-        node.args=newArguments
+        if(node.funcName!="printf" and node.funcName!="scanf"):
+            funcInfo = self.symbolTable.getSymbol(node.funcName)
+            newArguments = [None] * len(node.args)
+            for i in range (0,len(node.args)):
+                newArguments[i] = self.constantFolding(funcInfo.paramTypes[i],node.args[i])
+                newArguments[i] = self.eraseNullSequences(node.args[i])
+            node.args=newArguments
 
     def enterSubScript(self, node):
         node.index = self.constantFolding(self.symbolTable.getSymbol(node.mutable.name).type,node.index)
@@ -137,227 +138,230 @@ class Optimiser(ASTListener):
             node.expression=self.eraseNullSequences(node.expression)
 
     def constantFolding(self,basicType,expression):
-        if (basicType=="char"):
-            if (isinstance(expression.left,Expression.BinOp)):
-                leftPart = self.constantFolding(basicType,expression.left)
-                if (isinstance(expression.right, Literals.String) or isinstance(expression.right,Literals.Char) or isinstance(expression.right, Literals.Int) or isinstance(expression.right, Literals.Double)):
-                    if (isinstance(leftPart, Expression.BinOp)):
-                        if (isinstance(leftPart.right, Literals.String) or isinstance(leftPart.right,Literals.Char) or isinstance(leftPart.right, Literals.Int) or isinstance(leftPart.right, Literals.Double)):
-                            rightPart = Literals.String(leftPart.right.lineNr,leftPart.right.positionNr,leftPart.right.value[0:len(leftPart.right.value)-1]+ expression.right.value[1:len(expression.right.value)])
-                            return Expression.BinOp(expression.lineNr,expression.positionNr,expression.operator,leftPart.left,rightPart)
-                        else:
-                            expression.left = leftPart
-                            return expression
-                    else:
-                        return Literals.String(expression.lineNr, expression.positionNr,leftPart.value[0:len(leftPart.value) - 1] + expression.right.value[1:len(expression.right.value)])
-                else:
-                    expression.left=leftPart
-                    return expression
-            else:
-                if((isinstance(expression.left, Literals.String) or isinstance(expression.left, Literals.Char) or isinstance(expression.left, Literals.Int) or isinstance(expression.left, Literals.Double))and(isinstance(expression.right, Literals.String) or isinstance(expression.right, Literals.Char) or isinstance(expression.right, Literals.Int) or isinstance(expression.right, Literals.Double))):
-                    return Literals.String(expression.lineNr,expression.positionNr,expression.left.value[0:len(expression.left.value)-1]+ expression.right.value[1:len(expression.right.value)])
-                else:
-                    return expression
-        elif(basicType == "int" or basicType == "signed" or basicType=="unsigned" or basicType=="long"):
-            if (isinstance(expression.left,Expression.BinOp)):
-                leftPart = self.constantFolding(basicType,expression.left)
-                if (isinstance(expression.right, Literals.Int)):
-                    if (isinstance(leftPart, Expression.BinOp)):
-                        if(leftPart.operator.value=="+" or leftPart.operator.value=="-"):
-                            if (isinstance(leftPart.right, Literals.Int)):
-                                if (expression.operator.value == "+"):
-                                    newValue = str(int(leftPart.right.value) + int(expression.right.value))
-                                elif (expression.operator.value == "-"):
-                                    newValue = str(int(leftPart.right.value) - int(expression.right.value))
-                                elif (expression.operator.value == "*"):
-                                    newValue = str(int(int(leftPart.right.value) * int(expression.right.value)))
-                                else:
-                                    newValue = str(int(int(leftPart.right.value) / int(expression.right.value)))
-                                rightPart = Literals.Int(leftPart.right.lineNr,leftPart.right.positionNr,newValue)
+        if(isinstance(expression,Expression.BinOp)):
+            if (basicType=="char"):
+                if (isinstance(expression.left,Expression.BinOp)):
+                    leftPart = self.constantFolding(basicType,expression.left)
+                    if (isinstance(expression.right, Literals.String) or isinstance(expression.right,Literals.Char) or isinstance(expression.right, Literals.Int) or isinstance(expression.right, Literals.Double)):
+                        if (isinstance(leftPart, Expression.BinOp)):
+                            if (isinstance(leftPart.right, Literals.String) or isinstance(leftPart.right,Literals.Char) or isinstance(leftPart.right, Literals.Int) or isinstance(leftPart.right, Literals.Double)):
+                                rightPart = Literals.String(leftPart.right.lineNr,leftPart.right.positionNr,leftPart.right.value[0:len(leftPart.right.value)-1]+ expression.right.value[1:len(expression.right.value)])
                                 return Expression.BinOp(expression.lineNr,expression.positionNr,expression.operator,leftPart.left,rightPart)
                             else:
                                 expression.left = leftPart
                                 return expression
                         else:
-                            expression.left = leftPart
-                            return expression
+                            return Literals.String(expression.lineNr, expression.positionNr,leftPart.value[0:len(leftPart.value) - 1] + expression.right.value[1:len(expression.right.value)])
                     else:
-                        if (expression.operator.value == "+"):
-                            newValue = str(int(leftPart.value) + int(expression.right.value))
-                        elif (expression.operator.value == "-"):
-                            newValue = str(int(leftPart.value) - int(expression.right.value))
-                        elif (expression.operator.value == "*"):
-                            newValue = str(int(int(leftPart.value) * int(expression.right.value)))
-                        else:
-                            newValue = str(int(int(leftPart.value) / int(expression.right.value)))
-                        return Literals.Int(expression.lineNr, expression.positionNr,newValue)
-                elif(isinstance(expression.right,Expression.BinOp)):
-                    rightPart=self.constantFolding(basicType,expression.right)
-                    if(isinstance(rightPart,Literals.Int)):
+                        expression.left=leftPart
+                        return expression
+                else:
+                    if((isinstance(expression.left, Literals.String) or isinstance(expression.left, Literals.Char) or isinstance(expression.left, Literals.Int) or isinstance(expression.left, Literals.Double))and(isinstance(expression.right, Literals.String) or isinstance(expression.right, Literals.Char) or isinstance(expression.right, Literals.Int) or isinstance(expression.right, Literals.Double))):
+                        return Literals.String(expression.lineNr,expression.positionNr,expression.left.value[0:len(expression.left.value)-1]+ expression.right.value[1:len(expression.right.value)])
+                    else:
+                        return expression
+            elif(basicType == "int" or basicType == "signed" or basicType=="unsigned" or basicType=="long"):
+                if (isinstance(expression.left,Expression.BinOp)):
+                    leftPart = self.constantFolding(basicType,expression.left)
+                    if (isinstance(expression.right, Literals.Int)):
                         if (isinstance(leftPart, Expression.BinOp)):
-                            if (isinstance(leftPart.right, Literals.Int)):
-                                if (expression.operator.value == "+"):
-                                    newValue = str(int(leftPart.right.value) + int(rightPart.value))
-                                elif (expression.operator.value == "-"):
-                                    newValue = str(int(leftPart.right.value) - int(rightPart.value))
-                                elif (expression.operator.value == "*"):
-                                    newValue = str(int(int(leftPart.right.value) * int(rightPart.value)))
+                            if(leftPart.operator.value=="+" or leftPart.operator.value=="-"):
+                                if (isinstance(leftPart.right, Literals.Int)):
+                                    if (expression.operator.value == "+"):
+                                        newValue = str(int(leftPart.right.value) + int(expression.right.value))
+                                    elif (expression.operator.value == "-"):
+                                        newValue = str(int(leftPart.right.value) - int(expression.right.value))
+                                    elif (expression.operator.value == "*"):
+                                        newValue = str(int(int(leftPart.right.value) * int(expression.right.value)))
+                                    else:
+                                        newValue = str(int(int(leftPart.right.value) / int(expression.right.value)))
+                                    rightPart = Literals.Int(leftPart.right.lineNr,leftPart.right.positionNr,newValue)
+                                    return Expression.BinOp(expression.lineNr,expression.positionNr,expression.operator,leftPart.left,rightPart)
                                 else:
-                                    newValue = str(int(int(leftPart.right.value) / int(rightPart.value)))
-                                rightPart = Literals.Int(leftPart.right.lineNr, leftPart.right.positionNr, newValue)
-                                return Expression.BinOp(expression.lineNr, expression.positionNr, expression.operator,leftPart.left, rightPart)
+                                    expression.left = leftPart
+                                    return expression
                             else:
                                 expression.left = leftPart
-                                expression.right = rightPart
                                 return expression
                         else:
                             if (expression.operator.value == "+"):
-                                newValue = str(int(leftPart.value) + int(rightPart.value))
+                                newValue = str(int(leftPart.value) + int(expression.right.value))
                             elif (expression.operator.value == "-"):
-                                newValue = str(int(leftPart.value) - int(rightPart.value))
+                                newValue = str(int(leftPart.value) - int(expression.right.value))
                             elif (expression.operator.value == "*"):
-                                newValue = str(int(int(leftPart.value) * int(rightPart.value)))
+                                newValue = str(int(int(leftPart.value) * int(expression.right.value)))
                             else:
-                                newValue = str(int(int(leftPart.value) / int(rightPart.value)))
-                            return Literals.Int(expression.lineNr, expression.positionNr, newValue)
-                    else:
-                        expression.left=leftPart
-                        expression.right=rightPart
-                        return expression
-                else:
-                    expression.left=leftPart
-                    return expression
-            else:
-                if(isinstance(expression.left, Literals.Int)):
-                    if(isinstance(expression.right, Literals.Int)):
-                        if(expression.operator.value=="+"):
-                            newValue = str(int(expression.left.value) + int(expression.right.value))
-                        elif(expression.operator.value=="-"):
-                            newValue = str(int(expression.left.value) - int(expression.right.value))
-                        elif(expression.operator.value=="*"):
-                            newValue = str(int(int(expression.left.value) * int(expression.right.value)))
-                        else:
-                            newValue = str(int(int(expression.left.value) / int(expression.right.value)))
-                        return Literals.Int(expression.lineNr,expression.positionNr,newValue)
+                                newValue = str(int(int(leftPart.value) / int(expression.right.value)))
+                            return Literals.Int(expression.lineNr, expression.positionNr,newValue)
                     elif(isinstance(expression.right,Expression.BinOp)):
                         rightPart=self.constantFolding(basicType,expression.right)
                         if(isinstance(rightPart,Literals.Int)):
-                            if (expression.operator.value == "+"):
-                                newValue = str(int(expression.left.value) + int(rightPart.value))
-                            elif (expression.operator.value == "-"):
-                                newValue = str(int(expression.left.value) - int(rightPart.value))
-                            elif (expression.operator.value == "*"):
-                                newValue = str(int(int(expression.left.value) * int(rightPart.value)))
+                            if (isinstance(leftPart, Expression.BinOp)):
+                                if (isinstance(leftPart.right, Literals.Int)):
+                                    if (expression.operator.value == "+"):
+                                        newValue = str(int(leftPart.right.value) + int(rightPart.value))
+                                    elif (expression.operator.value == "-"):
+                                        newValue = str(int(leftPart.right.value) - int(rightPart.value))
+                                    elif (expression.operator.value == "*"):
+                                        newValue = str(int(int(leftPart.right.value) * int(rightPart.value)))
+                                    else:
+                                        newValue = str(int(int(leftPart.right.value) / int(rightPart.value)))
+                                    rightPart = Literals.Int(leftPart.right.lineNr, leftPart.right.positionNr, newValue)
+                                    return Expression.BinOp(expression.lineNr, expression.positionNr, expression.operator,leftPart.left, rightPart)
+                                else:
+                                    expression.left = leftPart
+                                    expression.right = rightPart
+                                    return expression
                             else:
-                                newValue = str(int(int(expression.left.value) / int(rightPart.value)))
-                            return Literals.Int(expression.lineNr, expression.positionNr, newValue)
+                                if (expression.operator.value == "+"):
+                                    newValue = str(int(leftPart.value) + int(rightPart.value))
+                                elif (expression.operator.value == "-"):
+                                    newValue = str(int(leftPart.value) - int(rightPart.value))
+                                elif (expression.operator.value == "*"):
+                                    newValue = str(int(int(leftPart.value) * int(rightPart.value)))
+                                else:
+                                    newValue = str(int(int(leftPart.value) / int(rightPart.value)))
+                                return Literals.Int(expression.lineNr, expression.positionNr, newValue)
                         else:
+                            expression.left=leftPart
                             expression.right=rightPart
                             return expression
                     else:
+                        expression.left=leftPart
                         return expression
                 else:
-                    if(isinstance(expression.right,Expression.BinOp)):
-                        expression.right = self.constantFolding(basicType,expression.right)
-                    return expression
-        else:
-            if (isinstance(expression.left,Expression.BinOp)):
-                leftPart = self.constantFolding(basicType,expression.left)
-                if (isinstance(expression.right, Literals.Double)):
-                    if (isinstance(leftPart, Expression.BinOp)):
-                        if (isinstance(leftPart.right, Literals.Double)):
-                            if (expression.operator.value == "+"):
-                                newValue = str(float(leftPart.right.value) + float(expression.right.value))
-                            elif (expression.operator.value == "-"):
-                                newValue = str(float(leftPart.right.value) - float(expression.right.value))
-                            elif (expression.operator.value == "*"):
-                                newValue = str(float(leftPart.right.value) * float(expression.right.value))
+                    if(isinstance(expression.left, Literals.Int)):
+                        if(isinstance(expression.right, Literals.Int)):
+                            if(expression.operator.value=="+"):
+                                newValue = str(int(expression.left.value) + int(expression.right.value))
+                            elif(expression.operator.value=="-"):
+                                newValue = str(int(expression.left.value) - int(expression.right.value))
+                            elif(expression.operator.value=="*"):
+                                newValue = str(int(int(expression.left.value) * int(expression.right.value)))
                             else:
-                                newValue = str(float(leftPart.right.value) / float(expression.right.value))
-                            rightPart = Literals.Double(leftPart.right.lineNr,leftPart.right.positionNr,newValue)
-                            return Expression.BinOp(expression.lineNr,expression.positionNr,expression.operator,leftPart.left,rightPart)
+                                newValue = str(int(int(expression.left.value) / int(expression.right.value)))
+                            return Literals.Int(expression.lineNr,expression.positionNr,newValue)
+                        elif(isinstance(expression.right,Expression.BinOp)):
+                            rightPart=self.constantFolding(basicType,expression.right)
+                            if(isinstance(rightPart,Literals.Int)):
+                                if (expression.operator.value == "+"):
+                                    newValue = str(int(expression.left.value) + int(rightPart.value))
+                                elif (expression.operator.value == "-"):
+                                    newValue = str(int(expression.left.value) - int(rightPart.value))
+                                elif (expression.operator.value == "*"):
+                                    newValue = str(int(int(expression.left.value) * int(rightPart.value)))
+                                else:
+                                    newValue = str(int(int(expression.left.value) / int(rightPart.value)))
+                                return Literals.Int(expression.lineNr, expression.positionNr, newValue)
+                            else:
+                                expression.right=rightPart
+                                return expression
                         else:
-                            expression.left = leftPart
                             return expression
                     else:
-                        if (expression.operator.value == "+"):
-                            newValue = str(float(leftPart.value) + float(expression.right.value))
-                        elif (expression.operator.value == "-"):
-                            newValue = str(float(leftPart.value) - float(expression.right.value))
-                        elif (expression.operator.value == "*"):
-                            newValue = str(float(leftPart.value) * float(expression.right.value))
-                        else:
-                            newValue = str(float(leftPart.value) / float(expression.right.value))
-                        return Literals.Double(expression.lineNr, expression.positionNr,newValue)
-                elif(isinstance(expression.right,Expression.BinOp)):
-                    rightPart=self.constantFolding(basicType,expression.right)
-                    if(isinstance(rightPart,Literals.Double)):
+                        if(isinstance(expression.right,Expression.BinOp)):
+                            expression.right = self.constantFolding(basicType,expression.right)
+                        return expression
+            else:
+                if (isinstance(expression.left,Expression.BinOp)):
+                    leftPart = self.constantFolding(basicType,expression.left)
+                    if (isinstance(expression.right, Literals.Double)):
                         if (isinstance(leftPart, Expression.BinOp)):
                             if (isinstance(leftPart.right, Literals.Double)):
                                 if (expression.operator.value == "+"):
-                                    newValue = str(float(leftPart.right.value) + float(rightPart.value))
+                                    newValue = str(float(leftPart.right.value) + float(expression.right.value))
                                 elif (expression.operator.value == "-"):
-                                    newValue = str(float(leftPart.right.value) - float(rightPart.value))
+                                    newValue = str(float(leftPart.right.value) - float(expression.right.value))
                                 elif (expression.operator.value == "*"):
-                                    newValue = str(float(leftPart.right.value) * float(rightPart.value))
+                                    newValue = str(float(leftPart.right.value) * float(expression.right.value))
                                 else:
-                                    newValue = str(float(leftPart.right.value) / float(rightPart.value))
-                                rightPart = Literals.Double(leftPart.right.lineNr, leftPart.right.positionNr, newValue)
-                                return Expression.BinOp(expression.lineNr, expression.positionNr, expression.operator,leftPart.left, rightPart)
+                                    newValue = str(float(leftPart.right.value) / float(expression.right.value))
+                                rightPart = Literals.Double(leftPart.right.lineNr,leftPart.right.positionNr,newValue)
+                                return Expression.BinOp(expression.lineNr,expression.positionNr,expression.operator,leftPart.left,rightPart)
                             else:
                                 expression.left = leftPart
-                                expression.right = rightPart
                                 return expression
                         else:
                             if (expression.operator.value == "+"):
-                                newValue = str(float(leftPart.value) + float(rightPart.value))
+                                newValue = str(float(leftPart.value) + float(expression.right.value))
                             elif (expression.operator.value == "-"):
-                                newValue = str(float(leftPart.value) - float(rightPart.value))
+                                newValue = str(float(leftPart.value) - float(expression.right.value))
                             elif (expression.operator.value == "*"):
-                                newValue = str(float(leftPart.value) * float(rightPart.value))
+                                newValue = str(float(leftPart.value) * float(expression.right.value))
                             else:
-                                newValue = str(float(leftPart.value) / float(rightPart.value))
-                            return Literals.Double(expression.lineNr, expression.positionNr, newValue)
-                    else:
-                        expression.left=leftPart
-                        expression.right=rightPart
-                        return expression
-                else:
-                    expression.left=leftPart
-                    return expression
-            else:
-                if(isinstance(expression.left, Literals.Double)):
-                    if(isinstance(expression.right, Literals.Double)):
-                        if(expression.operator.value=="+"):
-                            newValue = str(float(expression.left.value) + float(expression.right.value))
-                        elif(expression.operator.value=="-"):
-                            newValue = str(float(expression.left.value) - float(expression.right.value))
-                        elif(expression.operator.value=="*"):
-                            newValue = str(float(expression.left.value) * float(expression.right.value))
-                        else:
-                            newValue = str(float(expression.left.value) / float(expression.right.value))
-                        return Literals.Double(expression.lineNr,expression.positionNr,newValue)
+                                newValue = str(float(leftPart.value) / float(expression.right.value))
+                            return Literals.Double(expression.lineNr, expression.positionNr,newValue)
                     elif(isinstance(expression.right,Expression.BinOp)):
                         rightPart=self.constantFolding(basicType,expression.right)
                         if(isinstance(rightPart,Literals.Double)):
-                            if (expression.operator.value == "+"):
-                                newValue = str(float(expression.left.value) + float(rightPart.value))
-                            elif (expression.operator.value == "-"):
-                                newValue = str(float(expression.left.value) - float(rightPart.value))
-                            elif (expression.operator.value == "*"):
-                                newValue = str(float(expression.left.value) * float(rightPart.value))
+                            if (isinstance(leftPart, Expression.BinOp)):
+                                if (isinstance(leftPart.right, Literals.Double)):
+                                    if (expression.operator.value == "+"):
+                                        newValue = str(float(leftPart.right.value) + float(rightPart.value))
+                                    elif (expression.operator.value == "-"):
+                                        newValue = str(float(leftPart.right.value) - float(rightPart.value))
+                                    elif (expression.operator.value == "*"):
+                                        newValue = str(float(leftPart.right.value) * float(rightPart.value))
+                                    else:
+                                        newValue = str(float(leftPart.right.value) / float(rightPart.value))
+                                    rightPart = Literals.Double(leftPart.right.lineNr, leftPart.right.positionNr, newValue)
+                                    return Expression.BinOp(expression.lineNr, expression.positionNr, expression.operator,leftPart.left, rightPart)
+                                else:
+                                    expression.left = leftPart
+                                    expression.right = rightPart
+                                    return expression
                             else:
-                                newValue = str(float(expression.left.value) / float(rightPart.value))
-                            return Literals.Double(expression.lineNr, expression.positionNr, newValue)
+                                if (expression.operator.value == "+"):
+                                    newValue = str(float(leftPart.value) + float(rightPart.value))
+                                elif (expression.operator.value == "-"):
+                                    newValue = str(float(leftPart.value) - float(rightPart.value))
+                                elif (expression.operator.value == "*"):
+                                    newValue = str(float(leftPart.value) * float(rightPart.value))
+                                else:
+                                    newValue = str(float(leftPart.value) / float(rightPart.value))
+                                return Literals.Double(expression.lineNr, expression.positionNr, newValue)
                         else:
+                            expression.left=leftPart
                             expression.right=rightPart
                             return expression
                     else:
+                        expression.left=leftPart
                         return expression
                 else:
-                    if(isinstance(expression.right,Expression.BinOp)):
-                        expression.right = self.constantFolding(basicType,expression.right)
-                    return expression
+                    if(isinstance(expression.left, Literals.Double)):
+                        if(isinstance(expression.right, Literals.Double)):
+                            if(expression.operator.value=="+"):
+                                newValue = str(float(expression.left.value) + float(expression.right.value))
+                            elif(expression.operator.value=="-"):
+                                newValue = str(float(expression.left.value) - float(expression.right.value))
+                            elif(expression.operator.value=="*"):
+                                newValue = str(float(expression.left.value) * float(expression.right.value))
+                            else:
+                                newValue = str(float(expression.left.value) / float(expression.right.value))
+                            return Literals.Double(expression.lineNr,expression.positionNr,newValue)
+                        elif(isinstance(expression.right,Expression.BinOp)):
+                            rightPart=self.constantFolding(basicType,expression.right)
+                            if(isinstance(rightPart,Literals.Double)):
+                                if (expression.operator.value == "+"):
+                                    newValue = str(float(expression.left.value) + float(rightPart.value))
+                                elif (expression.operator.value == "-"):
+                                    newValue = str(float(expression.left.value) - float(rightPart.value))
+                                elif (expression.operator.value == "*"):
+                                    newValue = str(float(expression.left.value) * float(rightPart.value))
+                                else:
+                                    newValue = str(float(expression.left.value) / float(rightPart.value))
+                                return Literals.Double(expression.lineNr, expression.positionNr, newValue)
+                            else:
+                                expression.right=rightPart
+                                return expression
+                        else:
+                            return expression
+                    else:
+                        if(isinstance(expression.right,Expression.BinOp)):
+                            expression.right = self.constantFolding(basicType,expression.right)
+                        return expression
+        else:
+            return expression
 
     def eraseNullSequences(self,expression):
         if(isinstance(expression,Expression.BinOp)):
