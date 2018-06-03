@@ -93,6 +93,9 @@ class OptimiserTestCase(unittest.TestCase):
         self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[1].expression.right), Expression.BinOp)
         self.assertIs(type(AST.declarationList.declarations[0].body.statements[1].expression.right), Literals.Int)
 
+        self.assertIs(type(oldAST.declarationList.declarations[0].body.statements[2].expression.right), Expression.BinOp)
+        self.assertIs(type(AST.declarationList.declarations[0].body.statements[2].expression.right), Literals.Int)
+
 
 if __name__ == '__main__':
     unittest.main()
