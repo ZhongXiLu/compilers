@@ -129,13 +129,127 @@ class Optimiser(ASTListener):
 
     def enterAssign(self, node):
         if(isinstance(node.right,Expression.BinOp)):
-            node.right = self.constantFolding(self.symbolTable.getSymbol(node.left.name).type,node.right)
+            if(isinstance(node.left,Expression.Mutable)):
+                node.right = self.constantFolding(self.symbolTable.getSymbol(node.left.name).type,node.right)
+            else:
+                node.right = self.constantFolding(self.symbolTable.getSymbol(node.left.mutable.name).type,node.right)
             node.right = self.eraseNullSequences(node.right)
 
     def enterVarDeclInitialize(self, node):
         if (isinstance(node.expression,Expression.BinOp)):
             node.expression=self.constantFolding(self.symbolTable.getSymbol(node.name).type,node.expression)
             node.expression=self.eraseNullSequences(node.expression)
+
+    def enterIf(self, node):
+        if (isinstance(node.expression, Expression.BinOp)):
+            basicType = None
+            currentExpression = node.expression.left
+            while(True):
+                if(isinstance(currentExpression,Literals.Int)):
+                    basicType="int"
+                    break
+                if(isinstance(currentExpression,Literals.Double)):
+                    basicType="double"
+                    break
+                if(isinstance(currentExpression,Literals.Char)):
+                    basicType="char"
+                    break
+                if(isinstance(currentExpression,Expression.Mutable)):
+                    basicType=self.symbolTable.getSymbol(currentExpression.name)
+                    break
+                if(isinstance(currentExpression,Expression.SubScript)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.mutable.name)
+                    break
+                if(isinstance(currentExpression,Expression.Call)):
+                    basicType=self.symbolTable.getSymbol(currentExpression.funcName)
+                    break
+                if(isinstance(currentExpression,Expression.BinOp)):
+                    currentExpression=currentExpression.left
+            node.expression = self.constantFolding(basicType,node.expression)
+            node.expression = self.eraseNullSequences(node.expression)
+    def enterReturn(self, node):
+        if(isinstance(node.expression,Expression.BinOp)):
+            basicType = None
+            currentExpression = node.expression.left
+            while (True):
+                if (isinstance(currentExpression, Literals.Int)):
+                    basicType = "int"
+                    break
+                if (isinstance(currentExpression, Literals.Double)):
+                    basicType = "double"
+                    break
+                if (isinstance(currentExpression, Literals.Char)):
+                    basicType = "char"
+                    break
+                if (isinstance(currentExpression, Expression.Mutable)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.name)
+                    break
+                if (isinstance(currentExpression, Expression.SubScript)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.mutable.name)
+                    break
+                if (isinstance(currentExpression, Expression.Call)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.funcName)
+                    break
+                if (isinstance(currentExpression, Expression.BinOp)):
+                    currentExpression = currentExpression.left
+            node.expression = self.constantFolding(basicType, node.expression)
+            node.expression = self.eraseNullSequences(node.expression)
+
+    def enterWhileBranch(self, node):
+        if (isinstance(node.expression, Expression.BinOp)):
+            basicType = None
+            currentExpression = node.expression.left
+            while (True):
+                if (isinstance(currentExpression, Literals.Int)):
+                    basicType = "int"
+                    break
+                if (isinstance(currentExpression, Literals.Double)):
+                    basicType = "double"
+                    break
+                if (isinstance(currentExpression, Literals.Char)):
+                    basicType = "char"
+                    break
+                if (isinstance(currentExpression, Expression.Mutable)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.name)
+                    break
+                if (isinstance(currentExpression, Expression.SubScript)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.mutable.name)
+                    break
+                if (isinstance(currentExpression, Expression.Call)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.funcName)
+                    break
+                if (isinstance(currentExpression, Expression.BinOp)):
+                    currentExpression = currentExpression.left
+            node.expression = self.constantFolding(basicType, node.expression)
+            node.expression = self.eraseNullSequences(node.expression)
+
+    def enterExpressionStmt(self, node):
+        if (isinstance(node.expression, Expression.BinOp)):
+            basicType = None
+            currentExpression = node.expression.left
+            while (True):
+                if (isinstance(currentExpression, Literals.Int)):
+                    basicType = "int"
+                    break
+                if (isinstance(currentExpression, Literals.Double)):
+                    basicType = "double"
+                    break
+                if (isinstance(currentExpression, Literals.Char)):
+                    basicType = "char"
+                    break
+                if (isinstance(currentExpression, Expression.Mutable)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.name)
+                    break
+                if (isinstance(currentExpression, Expression.SubScript)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.mutable.name)
+                    break
+                if (isinstance(currentExpression, Expression.Call)):
+                    basicType = self.symbolTable.getSymbol(currentExpression.funcName)
+                    break
+                if (isinstance(currentExpression, Expression.BinOp)):
+                    currentExpression = currentExpression.left
+            node.expression = self.constantFolding(basicType, node.expression)
+            node.expression = self.eraseNullSequences(node.expression)
 
     def constantFolding(self,basicType,expression):
         if(isinstance(expression,Expression.BinOp)):
